@@ -79,6 +79,11 @@ public final class Dozenal implements View.OnClickListener {
         return out.toString();
     }
 
+    public static int parseInt(String value) {
+        String normalized = value.trim().replace('↊','a').replace('↋','b');
+        return Integer.parseInt(normalized, 12);
+    }
+
     public static boolean matches(double expected, String response) {
         if (response == null || response.trim().isEmpty()) return false;
         String text = response.trim().replace(',', '.').toLowerCase(Locale.ROOT)
