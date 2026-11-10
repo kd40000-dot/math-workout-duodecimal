@@ -34,6 +34,16 @@ This is still a **beta / incomplete conversion**: Cross Math, Lightning Round, s
 
 The test APK must be kept out of this public repo because it contains proprietary original code/assets and potentially sensitive bundled credentials. The original app is developer-signed, and a modified APK signed with a new key **cannot install on top of it**. Back up app data before uninstalling the original, or use a separate test profile/device.
 
+## Installation error fixed (2026-11-10)
+
+The first original-app patch failed to install with `INSTALL_FAILED_INVALID_APK: Failed to extract native libraries, res=-2`. The original app's manifest sets `android:extractNativeLibs="false"`. Its uncompressed native `.so` must therefore be aligned to a page-size boundary inside the **finally signed APK**. The earlier build's native-library data offset was **22,161,036 bytes**, not a multiple of 4,096. Its incorrect file offset arose from the signing stage changing entry positions after alignment.
+
+The corrected private test APK was signed with `apksigner sign --v1-signing-enabled false --v4-signing-enabled false --lib-page-alignment 16384` *directly from* the built unsigned APK containing `classes5.dex`. Its native library starts at offset **22,200,320 bytes**, exactly divisible by 16,384. Signature Scheme v2/v3 and ZIP CRC validation both pass. The native library's contents are byte-for-byte identical to the original.
+
+See `reverse-patch/scripts/sign_original_apk.sh` and `verify_installable.py`. These scripts help detect this packaging regression, but **an actual physical-device install and startup have not yet been confirmed**.
+
+Since this is a patch of the original APK but signed using a different key, Android's normal package manager will reject *updating* a currently installed developer-signed version with `INSTALL_FAILED_UPDATE_INCOMPATIBLE`. Back up the original app data before removing it and installing the patched app. Avoid publishing the modified proprietary APK or the signing keystore in this public repo. Keep the privately generated signing key for future patch updates.
+
 ## Retired standalone prototype
 
 The `app/` folder is a separate, independent calculator trainer created earlier. It is not the target of ongoing development. The original-app reverse-engineering files in `reverse-patch/` are now authoritative.
