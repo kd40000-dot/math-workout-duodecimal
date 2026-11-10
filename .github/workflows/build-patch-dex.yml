@@ -1,0 +1,40 @@
+name: Compile Original-App Base-Twelve Patch
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'reverse-patch/**'
+      - '.github/workflows/build-patch-dex.yml'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Build Android support DEX and signing tools
+        run: |
+          set -euxo pipefail
+          SDK="${ANDROID_HOME}"
+          "$SDK/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0"
+          mkdir -p build/compiled build/artifacts/signing/lib
+          javac --release 8 -cp "$SDK/platforms/android-35/android.jar" \
+            -d build/compiled \
+            reverse-patch/compile-stub/l5/x.java \
+            reverse-patch/java/com/sankhyantra/mathstricks/duo/Dozenal.java
+          "$SDK/build-tools/35.0.0/d8" --min-api 26 \
+            --lib "$SDK/platforms/android-35/android.jar" \
+            --classpath build/compiled \
+            --output build/artifacts \
+            build/compiled/com/sankhyantra/mathstricks/duo/Dozenal.class
+          mv build/artifacts/classes.dex build/artifacts/classes5.dex
+          cp "$SDK/build-tools/35.0.0/zipalign" build/artifacts/signing/
+          cp "$SDK/build-tools/35.0.0/apksigner" build/artifacts/signing/
+          cp "$SDK/build-tools/35.0.0/lib/apksigner.jar" build/artifacts/signing/lib/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: original-app-base12-patch-dex-and-signing
+          path: build/artifacts/**
+          if-no-files-found: error
