@@ -2,6 +2,7 @@
     <application android:allowBackup="true" android:label="Duodecimal Workout" android:theme="@android:style/Theme.Material.NoActionBar" android:usesCleartextTraffic="false">
         <activity android:name=".CustomPracticeActivity" android:exported="false"/>
         <activity android:name=".VisualAdditionActivity" android:exported="false"/>
+        <activity android:name=".VisualMultiplicationActivity" android:exported="false"/>
         <activity android:name=".MainActivity" android:exported="true" android:screenOrientation="unspecified">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
