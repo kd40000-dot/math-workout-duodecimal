@@ -92,18 +92,19 @@ public final class MainActivity extends Activity {
             startActivity(new Intent(this, VisualAdditionActivity.class)));
         addSpace(body,16);
         body.addView(label("Exercise",14,MUTED,true));
-        Spinner modes = new Spinner(this);
+        Spinner modes = new Spinner(this, Spinner.MODE_DROPDOWN);
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item,DozenMath.MODES) {
             @Override public View getView(int position,View convertView,ViewGroup parent) {
                 return styledItem(super.getView(position,convertView,parent), FG);
             }
             @Override public View getDropDownView(int position,View convertView,ViewGroup parent) {
-                return styledItem(super.getDropDownView(position,convertView,parent), BG);
+                return styledItem(super.getDropDownView(position,convertView,parent), FG);
             }
         };
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         modes.setAdapter(adapter);
         modes.setBackground(round(SURFACE,12));
+        modes.setPopupBackgroundDrawable(round(SURFACE,12));
         modes.setPadding(dp(12),dp(2),dp(8),dp(2));
         body.addView(modes,new LinearLayout.LayoutParams(-1,dp(52)));
         modes.setSelection(Math.max(0,Math.min(DozenMath.MODES.length-1,mode)));
