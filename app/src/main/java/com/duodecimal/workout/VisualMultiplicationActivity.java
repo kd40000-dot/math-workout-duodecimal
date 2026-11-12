@@ -34,7 +34,7 @@ public final class VisualMultiplicationActivity extends Activity {
     private SharedPreferences prefs;
     private LinearLayout root;
     private ScrollView scroll;
-    private int mode, a, b, stage, completed, perfect, total=12;
+    private int mode, a, b, stage=-1, completed, perfect, total=12;
     private boolean questionPerfect=true, resolved=false;
     private Runnable pending;
     private TextView feedback;
