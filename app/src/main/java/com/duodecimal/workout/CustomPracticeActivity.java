@@ -563,6 +563,7 @@ public final class CustomPracticeActivity extends Activity {
     private View styleOption(View view, int color) {
         if (view instanceof TextView) {
             TextView text = (TextView) view;
+            text.setText(Numerals.render(text.getText()));
             text.setTextColor(color);
             text.setTextSize(15);
             text.setPadding(dp(8), dp(8), dp(8), dp(8));
@@ -601,7 +602,7 @@ public final class CustomPracticeActivity extends Activity {
     }
 
     private TextView label(String text, int sp, int color, boolean bold) {
-        TextView view = new TextView(this);
+        TextView view = new Numerals.NumeralTextView(this);
         view.setText(text);
         view.setTextColor(color);
         view.setTextSize(sp);
@@ -610,7 +611,7 @@ public final class CustomPracticeActivity extends Activity {
     }
 
     private Button button(String text, int background, int foreground, int sp) {
-        Button button = new Button(this);
+        Button button = new Numerals.NumeralButton(this);
         button.setText(text);
         button.setAllCaps(false);
         button.setTextSize(sp);
