@@ -83,9 +83,11 @@ public final class Numerals {
             char ch = text.charAt(i);
             int value = digit(ch);
             if (value >= 0) {
-                drawDigit(canvas, value, startX + i * glyphWidth, baseY, size, paint.getColor());
+                drawDigit(canvas, value, startX + i * glyphWidth, baseY, size, view.getCurrentTextColor());
             } else {
-                canvas.drawText(String.valueOf(ch), startX + i * glyphWidth, baseY, paint);
+                Paint signPaint = new Paint(paint);
+                signPaint.setColor(view.getCurrentTextColor());
+                canvas.drawText(String.valueOf(ch), startX + i * glyphWidth, baseY, signPaint);
             }
         }
     }
