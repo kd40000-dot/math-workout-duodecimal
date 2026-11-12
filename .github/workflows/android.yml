@@ -30,19 +30,19 @@ jobs:
         run: gradle --no-daemon :app:assembleDebug
       - uses: actions/upload-artifact@v4
         with:
-          name: duodecimal-workout-1.3.2-apk
+          name: duodecimal-workout-1.4.0-apk
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
       - name: Publish directly downloadable APK on GitHub Releases
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk Duodecimal-Workout-1.3.2.apk
-          if gh release view v1.3.2 >/dev/null 2>&1; then
-            gh release upload v1.3.2 Duodecimal-Workout-1.3.2.apk --clobber
+          cp app/build/outputs/apk/debug/app-debug.apk Duodecimal-Workout-1.4.0.apk
+          if gh release view v1.4.0 >/dev/null 2>&1; then
+            gh release upload v1.4.0 Duodecimal-Workout-1.4.0.apk --clobber
           else
-            gh release create v1.3.2 Duodecimal-Workout-1.3.2.apk \
+            gh release create v1.4.0 Duodecimal-Workout-1.4.0.apk \
               --target "$GITHUB_SHA" \
-              --title "Duodecimal Workout 1.3.2" \
-              --notes "Fixes numeral foreground colors on the dark keypad and selected-fact tables, using each view's current text color. Debug-signed build."
+              --title "Duodecimal Workout 1.4.0" \
+              --notes "Visual Addition training: five modes for cap mod 3, body mod 4, no-carry combination, carry recognition, and full three-step sums; exact Draft A component glyphs, instant feedback, tables, per-mode statistics and optional one-minute timed challenge."
           fi
