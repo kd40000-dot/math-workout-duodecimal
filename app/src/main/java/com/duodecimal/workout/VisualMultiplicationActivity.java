@@ -2,6 +2,7 @@ package com.duodecimal.workout;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
+import android.graphics.Canvas;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
@@ -158,10 +159,19 @@ public final class VisualMultiplicationActivity extends Activity {
         int part=stages()[stage];
         add("STEP "+DozenMath.format(stage+1)+"/"+DozenMath.format(stages().length)+" · "+partName(part),15,PURPLE);
         gap(7);
-        if(part==0){
-            add(CAPS[a%3]+" × "+CAPS[b%3]+" = ?",17,FG);
-        } else if(part==1){
-            add(BODIES[a%4]+" × "+BODIES[b%4]+" = ?",17,FG);
+        if(part==0 || part==1){
+            boolean cap=part==0;
+            LinearLayout row=new LinearLayout(this);
+            row.setOrientation(LinearLayout.HORIZONTAL);
+            root.addView(row,new LinearLayout.LayoutParams(-1,dp(83)));
+            int l=cap?a%3:a%4, r=cap?b%3:b%4;
+            row.addView(new ComponentView(cap,l),new LinearLayout.LayoutParams(0,-1,1));
+            TextView times=label("×",25,CYAN);times.setGravity(Gravity.CENTER);
+            row.addView(times,new LinearLayout.LayoutParams(dp(32),-1));
+            row.addView(new ComponentView(cap,r),new LinearLayout.LayoutParams(0,-1,1));
+            TextView equal=label("= ?",25,CYAN);equal.setGravity(Gravity.CENTER);
+            row.addView(equal,new LinearLayout.LayoutParams(dp(56),-1));
+            add((cap?CAPS[l]:BODIES[l])+" × "+(cap?CAPS[r]:BODIES[r]),14,MUTED);
         } else if(part==2){
             add("Cap: "+CAPS[expected(0)]+" · Body: "+BODIES[expected(1)],16,CYAN);
             add("Which digit has both features?",15,FG);
@@ -179,11 +189,26 @@ public final class VisualMultiplicationActivity extends Activity {
                 final int choice=r*4+c;
                 if(choice>=count){View blank=new View(this);row.addView(blank,new LinearLayout.LayoutParams(0,-1,1));continue;}
                 String name=part==0?CAPS[choice]:part==1?BODIES[choice]:DozenMath.format(choice);
-                Button key=button(name,SURFACE,FG);
                 LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,-1,1);
                 lp.setMargins(dp(2),dp(2),dp(2),dp(2));
-                row.addView(key,lp);
-                key.setOnClickListener(v->answer(part,choice,key));
+                if(part<=1){
+                    LinearLayout tile=new LinearLayout(this);
+                    tile.setOrientation(LinearLayout.VERTICAL);
+                    tile.setGravity(Gravity.CENTER);
+                    tile.setBackground(bg(SURFACE));
+                    tile.addView(new ComponentView(part==0,choice),new LinearLayout.LayoutParams(-1,dp(43)));
+                    TextView nameLabel=label(name,11,FG);
+                    nameLabel.setGravity(Gravity.CENTER);
+                    tile.addView(nameLabel);
+                    row.addView(tile,lp);
+                    tile.setContentDescription(name);
+                    tile.setClickable(true);
+                    tile.setOnClickListener(v->answer(part,choice,tile));
+                } else {
+                    Button key=button(name,SURFACE,FG);
+                    row.addView(key,lp);
+                    key.setOnClickListener(v->answer(part,choice,key));
+                }
             }
         }
         gap(12);
@@ -206,7 +231,7 @@ public final class VisualMultiplicationActivity extends Activity {
         return DozenMath.format(a)+" × "+DozenMath.format(b)+" = "+DozenMath.format(product)+
             " = "+DozenMath.format(expected(3))+" × 10₁₂ + "+DozenMath.format(expected(2))+".";
     }
-    private void answer(int part,int choice,Button key){
+    private void answer(int part,int choice,View key){
         if(resolved)return;
         if(choice!=expected(part)){
             questionPerfect=false;feedback.setTextColor(RED);
@@ -225,6 +250,21 @@ public final class VisualMultiplicationActivity extends Activity {
         };
         handler.postDelayed(pending,last?1100:700);
     }
+    private final class ComponentView extends View {
+        private final boolean cap;
+        private final int value;
+        ComponentView(boolean cap,int value){
+            super(VisualMultiplicationActivity.this);
+            this.cap=cap;this.value=value;
+            setContentDescription((cap?"Cap ":"Body ")+(cap?CAPS[value]:BODIES[value]));
+        }
+        @Override protected void onDraw(Canvas canvas){
+            super.onDraw(canvas);
+            float h=Math.min(dp(cap?44:66),getHeight()*.82f);
+            Numerals.drawComponent(canvas,cap,value,getWidth()/2f,getHeight()/2f,h,FG);
+        }
+    }
+
     private void finished(){
         stage=-1;root.removeAllViews();header("Session complete");
         add("Perfect questions: "+DozenMath.format(perfect)+"/"+DozenMath.format(total),21,GREEN);
