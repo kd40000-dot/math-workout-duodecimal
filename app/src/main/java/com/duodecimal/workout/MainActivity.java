@@ -95,6 +95,11 @@ public final class MainActivity extends Activity {
         body.addView(visualMultiply, new LinearLayout.LayoutParams(-1,dp(52)));
         visualMultiply.setOnClickListener(v ->
             startActivity(new Intent(this, VisualMultiplicationActivity.class)));
+        addSpace(body,10);
+        Button recognition = button("GLYPH RECOGNITION · MEMORIZE SYMBOLS →", SURFACE, CYAN);
+        body.addView(recognition, new LinearLayout.LayoutParams(-1,dp(52)));
+        recognition.setOnClickListener(v ->
+            startActivity(new Intent(this, GlyphRecognitionActivity.class)));
         addSpace(body,16);
         body.addView(label("Exercise",14,MUTED,true));
         Spinner modes = new Spinner(this, Spinner.MODE_DROPDOWN);
