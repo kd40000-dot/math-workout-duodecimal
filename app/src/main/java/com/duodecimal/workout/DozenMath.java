@@ -39,6 +39,16 @@ public final class DozenMath {
         }
         return neg ? -value : value;
     }
+    /**
+     * Returns true only when the entered base-twelve value matches the result.
+     * Incomplete or malformed entries are never accepted, and a wrong prefix
+     * does not count as an incorrect response until CHECK is pressed.
+     */
+    public static boolean isCorrect(String entered, long expected) {
+        Long value = parse(entered);
+        return value != null && value.longValue() == expected;
+    }
+
     public static final class Problem {
         public final String mode, prompt, details;
         public final long answer;
