@@ -85,6 +85,11 @@ public final class MainActivity extends Activity {
         Button customPractice = button("CUSTOM PRACTICE · SELECT FACTS →", PURPLE, BG);
         body.addView(customPractice, new LinearLayout.LayoutParams(-1,dp(52)));
         customPractice.setOnClickListener(v -> startActivity(new Intent(this, CustomPracticeActivity.class)));
+        addSpace(body,10);
+        Button visualAddition = button("VISUAL ADDITION · CAP + BODY →", SURFACE, CYAN);
+        body.addView(visualAddition, new LinearLayout.LayoutParams(-1,dp(52)));
+        visualAddition.setOnClickListener(v ->
+            startActivity(new Intent(this, VisualAdditionActivity.class)));
         addSpace(body,16);
         body.addView(label("Exercise",14,MUTED,true));
         Spinner modes = new Spinner(this);
