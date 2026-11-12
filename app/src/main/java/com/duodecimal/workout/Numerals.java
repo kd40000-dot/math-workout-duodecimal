@@ -47,17 +47,68 @@ public final class Numerals {
         return result;
     }
 
+    /*
+     * Numeric-only text is painted directly in the view's Canvas rather than
+     * using ReplacementSpan. Android versions / modified system fonts can
+     * measure or clip ReplacementSpan runs in short single-line controls,
+     * leaving keypad keys and grid cells visually empty. Direct drawing
+     * gives all twelve symbols a predictable, measurable painted area.
+     */
+    private static boolean isNumeralString(CharSequence text) {
+        if (text == null || text.length() == 0) return false;
+        boolean foundDigit = false;
+        for (int i = 0; i < text.length(); i++) {
+            char ch = text.charAt(i);
+            if (digit(ch) >= 0) { foundDigit = true; continue; }
+            if (i == 0 && (ch == '−' || ch == '-')) continue;
+            return false;
+        }
+        return foundDigit;
+    }
+
+    private static void drawNumericText(Canvas canvas, TextView view) {
+        CharSequence text = view.getText();
+        Paint paint = view.getPaint();
+        float size = paint.getTextSize();
+        float glyphWidth = size * 0.69f;
+        float totalWidth = text.length() * glyphWidth;
+        float availableWidth = view.getWidth() - view.getPaddingLeft() - view.getPaddingRight();
+        float startX = view.getPaddingLeft() + (availableWidth - totalWidth) * 0.5f;
+        // The glyph paths occupy y=12..105 of a 112-unit design grid.
+        // Place their visible outlines in the center of the content rectangle.
+        float contentHeight = view.getHeight() - view.getPaddingTop() - view.getPaddingBottom();
+        float top = view.getPaddingTop() + (contentHeight - size * (93f / 112f)) * 0.5f;
+        float baseY = top + size * (106f / 112f);
+        for (int i = 0; i < text.length(); i++) {
+            char ch = text.charAt(i);
+            int value = digit(ch);
+            if (value >= 0) {
+                drawDigit(canvas, value, startX + i * glyphWidth, baseY, size, paint.getColor());
+            } else {
+                canvas.drawText(String.valueOf(ch), startX + i * glyphWidth, baseY, paint);
+            }
+        }
+    }
+
     public static final class NumeralTextView extends TextView {
         public NumeralTextView(Context context) { super(context); }
         @Override public void setText(CharSequence text, BufferType type) {
-            super.setText(Numerals.render(text), type);
+            super.setText(isNumeralString(text) ? text : Numerals.render(text), type);
+        }
+        @Override protected void onDraw(Canvas canvas) {
+            if (isNumeralString(getText())) drawNumericText(canvas, this);
+            else super.onDraw(canvas);
         }
     }
 
     public static final class NumeralButton extends Button {
         public NumeralButton(Context context) { super(context); }
         @Override public void setText(CharSequence text, BufferType type) {
-            super.setText(Numerals.render(text), type);
+            super.setText(isNumeralString(text) ? text : Numerals.render(text), type);
+        }
+        @Override protected void onDraw(Canvas canvas) {
+            if (isNumeralString(getText())) drawNumericText(canvas, this);
+            else super.onDraw(canvas);
         }
     }
 
@@ -179,10 +230,14 @@ public final class Numerals {
 
         @Override public void draw(Canvas canvas, CharSequence text, int start, int end,
                 float x, int top, int y, int bottom, Paint paint) {
-            float size = paint.getTextSize();
+            drawDigit(canvas, value, x, y, paint.getTextSize(), paint.getColor());
+        }
+    }
+
+    private static void drawDigit(Canvas canvas, int value, float x, float y,
+                                  float size, int color) {
             float scale = size / 112f;
             float width = size * 0.69f;
-            int color = paint.getColor();
             canvas.save();
             canvas.translate(x + width * 0.5f - 50f * scale, y - 106f * scale);
             canvas.scale(scale, scale);
@@ -200,6 +255,5 @@ public final class Numerals {
             canvas.drawPath(CAP_PATHS[ModularDigits.cap(value)], glyphPaint);
 
             canvas.restore();
-        }
     }
 }
