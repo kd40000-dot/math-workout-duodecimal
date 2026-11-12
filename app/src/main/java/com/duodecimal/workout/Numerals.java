@@ -32,12 +32,7 @@ import android.content.Context;
 public final class Numerals {
     private Numerals() {}
 
-    private static int digit(char ch) {
-        if (ch >= '0' && ch <= '9') return ch - '0';
-        if (ch == '↊') return 10;
-        if (ch == '↋') return 11;
-        return -1;
-    }
+    private static int digit(char ch) { return ModularDigits.valueOf(ch); }
 
     public static CharSequence render(CharSequence text) {
         if (text == null) return "";
@@ -197,12 +192,12 @@ public final class Numerals {
             glyphPaint.setStrokeCap(Paint.Cap.ROUND);
             glyphPaint.setStrokeJoin(Paint.Join.ROUND);
             glyphPaint.setStrokeWidth(6.6f);
-            glyphPaint.setStyle(value % 4 == 3 ? Paint.Style.FILL : Paint.Style.STROKE);
-            canvas.drawPath(BODY_PATHS[value % 4], glyphPaint);
+            glyphPaint.setStyle(ModularDigits.body(value) == 3 ? Paint.Style.FILL : Paint.Style.STROKE);
+            canvas.drawPath(BODY_PATHS[ModularDigits.body(value)], glyphPaint);
 
-            glyphPaint.setStyle(value % 3 == 2 ? Paint.Style.FILL : Paint.Style.STROKE);
+            glyphPaint.setStyle(ModularDigits.cap(value) == 2 ? Paint.Style.FILL : Paint.Style.STROKE);
             glyphPaint.setStrokeWidth(7f);
-            canvas.drawPath(CAP_PATHS[value % 3], glyphPaint);
+            canvas.drawPath(CAP_PATHS[ModularDigits.cap(value)], glyphPaint);
 
             canvas.restore();
         }
