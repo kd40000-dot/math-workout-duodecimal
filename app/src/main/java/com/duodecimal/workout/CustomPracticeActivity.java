@@ -5,6 +5,8 @@ import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -49,6 +51,37 @@ public final class CustomPracticeActivity extends Activity {
     private TextView progress, question, response, feedback;
     private Button checkButton;
     private final Random random = new Random();
+    private static final long AUTO_ADVANCE_MS = 400L;
+    private final Handler autoAdvanceHandler = new Handler(Looper.getMainLooper());
+    private Runnable pendingAdvance;
+    private int questionSerial;
+
+    private void cancelAutoAdvance() {
+        if (pendingAdvance != null) {
+            autoAdvanceHandler.removeCallbacks(pendingAdvance);
+            pendingAdvance = null;
+        }
+    }
+
+    private void advanceAfterCorrect() {
+        cancelAutoAdvance();
+        final int answeredQuestion = questionSerial;
+        pendingAdvance = () -> {
+            pendingAdvance = null;
+            if (!isFinishing() && !isDestroyed() && session != null
+                    && answered && questionSerial == answeredQuestion) {
+                sessionIndex++;
+                showQuestion();
+            }
+        };
+        autoAdvanceHandler.postDelayed(pendingAdvance, AUTO_ADVANCE_MS);
+    }
+
+    @Override protected void onDestroy() {
+        cancelAutoAdvance();
+        super.onDestroy();
+    }
+
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -104,6 +137,8 @@ public final class CustomPracticeActivity extends Activity {
     }
 
     private void showConfiguration() {
+        cancelAutoAdvance();
+        questionSerial++;
         session = null;
         content.removeAllViews();
         header("Custom Practice", "Choose exact facts to practice. Tap table cells to include or exclude them.");
@@ -335,6 +370,8 @@ public final class CustomPracticeActivity extends Activity {
     }
 
     private void showQuestion() {
+        cancelAutoAdvance();
+        questionSerial++;
         if (session == null || sessionIndex >= session.size()) {
             showFinished();
             return;
@@ -423,6 +460,7 @@ public final class CustomPracticeActivity extends Activity {
         if (!answered && typed.length() < 17) {
             typed.append(digit);
             showTyped();
+            autoAcceptIfCorrect();
         }
     }
 
@@ -431,7 +469,15 @@ public final class CustomPracticeActivity extends Activity {
         feedback.setText("");
     }
 
+    private void autoAcceptIfCorrect() {
+        if (session != null && !answered && DozenMath.isCorrect(typed.toString(),
+                PracticeGrid.problem(operation, session.get(sessionIndex)).answer)) {
+            checkAnswer();
+        }
+    }
+
     private void checkAnswer() {
+        if (answered || session == null || sessionIndex >= session.size()) return;
         Long entered = DozenMath.parse(typed.toString());
         if (entered == null) {
             feedback.setTextColor(RED);
@@ -445,6 +491,7 @@ public final class CustomPracticeActivity extends Activity {
             sessionCorrect++;
             feedback.setTextColor(GREEN);
             feedback.setText("Correct! ✓");
+            advanceAfterCorrect();
         } else {
             feedback.setTextColor(RED);
             feedback.setText("Correct answer: " + DozenMath.format(current.answer));
