@@ -24,25 +24,27 @@ jobs:
         run: |
           echo "ANDROID_HOME=$ANDROID_HOME"
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0"
+      - name: Verify dark dropdown contrast
+        run: python3 app/ci/test_spinner_contrast.py
       - name: Test arithmetic
         run: gradle --no-daemon :app:testDebugUnitTest
       - name: Assemble APK
         run: gradle --no-daemon :app:assembleDebug
       - uses: actions/upload-artifact@v4
         with:
-          name: duodecimal-workout-1.4.0-apk
+          name: duodecimal-workout-1.4.1-apk
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
       - name: Publish directly downloadable APK on GitHub Releases
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk Duodecimal-Workout-1.4.0.apk
-          if gh release view v1.4.0 >/dev/null 2>&1; then
-            gh release upload v1.4.0 Duodecimal-Workout-1.4.0.apk --clobber
+          cp app/build/outputs/apk/debug/app-debug.apk Duodecimal-Workout-1.4.1.apk
+          if gh release view v1.4.1 >/dev/null 2>&1; then
+            gh release upload v1.4.1 Duodecimal-Workout-1.4.1.apk --clobber
           else
-            gh release create v1.4.0 Duodecimal-Workout-1.4.0.apk \
+            gh release create v1.4.1 Duodecimal-Workout-1.4.1.apk \
               --target "$GITHUB_SHA" \
-              --title "Duodecimal Workout 1.4.0" \
-              --notes "Visual Addition training: five modes for cap mod 3, body mod 4, no-carry combination, carry recognition, and full three-step sums; exact Draft A component glyphs, instant feedback, tables, per-mode statistics and optional one-minute timed challenge."
+              --title "Duodecimal Workout 1.4.1" \
+              --notes "Fixes unreadable dropdown options: all selectors now show bright Dracula foreground text against explicitly dark popup backgrounds, including Visual Addition, main exercise selection, and Custom Practice."
           fi
