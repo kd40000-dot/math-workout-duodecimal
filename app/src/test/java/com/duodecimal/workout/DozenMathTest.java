@@ -17,6 +17,22 @@ public class DozenMathTest {
         assertNull(DozenMath.parse("12.5"));
         assertNull(DozenMath.parse("↌"));
     }
+    @Test public void autoAcceptsOnlyExactBaseTwelveValues() {
+        assertTrue(DozenMath.isCorrect("↊", 10));
+        assertTrue(DozenMath.isCorrect("a", 10));
+        assertTrue(DozenMath.isCorrect("↋", 11));
+        assertTrue(DozenMath.isCorrect("10", 12));
+        assertTrue(DozenMath.isCorrect("100", 144));
+        assertTrue(DozenMath.isCorrect("−↋", -11));
+        assertTrue(DozenMath.isCorrect("0", 0));
+        assertFalse(DozenMath.isCorrect("", 0));
+        assertFalse(DozenMath.isCorrect("−", -11));
+        assertFalse(DozenMath.isCorrect("1", 12));
+        assertFalse(DozenMath.isCorrect("10", 10));
+        assertFalse(DozenMath.isCorrect("1↋", 12));
+        assertFalse(DozenMath.isCorrect("oops", 0));
+    }
+
     @Test public void everyModeIsBaseTwelveAndCheckable() {
         DozenMath math = new DozenMath(new Random(425));
         for (int mode = 0; mode < DozenMath.MODES.length; mode++) {
