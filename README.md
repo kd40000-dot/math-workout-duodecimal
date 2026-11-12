@@ -2,6 +2,30 @@
 
 This repository contains **two different projects**. For the current user's request, the active app is the **separate, original duodecimal workout app** with package `com.duodecimal.workout`, found under `app/`. The `reverse-patch/` folder contains an unrelated, experimental patch for Math Tricks Workout 2.8.5 and is retained for reference only.
 
+## Version 1.3.0 — Draft A modular numerals
+
+The standalone app now **renders all base-twelve digits** in the custom glyph
+system: body = digit modulo 4; cap = digit modulo 3. This applies to regular
+workout prompts, entered answers, keypad labels, feedback, scores, session
+counts, Custom Practice table results, row/column headers, and spinner items.
+The source of truth is `app/src/main/java/com/duodecimal/workout/Numerals.java`.
+
+Bodies: rounded rectangular zero (0 mod 4), short-bar `⊺` (1 mod 4),
+V (2 mod 4), and the **exact regular-weight outline of U+218B ↋** (3 mod 4).
+Caps: flat horizontal, Vietnamese breve (as in `ă`), and dot, corresponding
+to residues modulo 3 of 0, 1, and 2.
+
+The app draws these shapes directly as Android vector paths in replacement
+spans; **no font files are bundled or required**. Number strings still use
+standard underlying 0–9/↊/↋ code points for arithmetic and accessibility.
+Base-12 calculations, saved fact profiles and automatic acceptance of correct
+answers are preserved.
+
+Note: the GitHub Actions build uses a per-run debug signing certificate and
+may not directly update a prior version. Back up selections or other data
+before uninstalling an earlier version. Permanent production signing remains
+future work.
+
 ## Version 1.1.0 — Custom Practice
 
 On the home screen, tap **CUSTOM PRACTICE · SELECT FACTS →**. This opens a dedicated page where you can:
