@@ -511,14 +511,14 @@ public final class VisualAdditionActivity extends Activity {
     }
 
     private Spinner spinner(String[] values,int choice) {
-        Spinner s=new Spinner(this);
+        Spinner s=new Spinner(this, Spinner.MODE_DROPDOWN);
         ArrayAdapter<String> adapter=new ArrayAdapter<String>(this,
             android.R.layout.simple_spinner_item,values) {
             @Override public View getView(int position, View old, ViewGroup parent) {
                 return styleSpinner(super.getView(position,old,parent),FG);
             }
             @Override public View getDropDownView(int position, View old, ViewGroup parent) {
-                return styleSpinner(super.getDropDownView(position,old,parent),BG);
+                return styleSpinner(super.getDropDownView(position,old,parent),FG);
             }
         };
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -526,6 +526,9 @@ public final class VisualAdditionActivity extends Activity {
         s.setSelection(choice);
         s.setPadding(dp(10),0,dp(8),0);
         s.setBackground(bg(SURFACE,10));
+        // Explicit popup background and bright text: Android's dropdown theme
+        // otherwise combines almost-black options with a dark popup.
+        s.setPopupBackgroundDrawable(bg(SURFACE,10));
         return s;
     }
     private View styleSpinner(View v,int fg) {
