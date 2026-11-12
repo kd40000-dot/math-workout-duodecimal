@@ -3,6 +3,7 @@ package com.duodecimal.workout;
 import android.app.Activity;
 import android.os.Bundle;
 import android.content.SharedPreferences;
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.view.Gravity;
@@ -49,6 +50,10 @@ public final class MainActivity extends Activity {
         TextView title=label("Duodecimal Workout",29,PURPLE,true);
         body.addView(title);
         body.addView(label("BASE 12   ·   ↊ = ten   ·   ↋ = eleven",13,CYAN,false));
+        addSpace(body,14);
+        Button customPractice = button("CUSTOM PRACTICE · SELECT FACTS →", PURPLE, BG);
+        body.addView(customPractice, new LinearLayout.LayoutParams(-1,dp(52)));
+        customPractice.setOnClickListener(v -> startActivity(new Intent(this, CustomPracticeActivity.class)));
         addSpace(body,16);
         body.addView(label("Exercise",14,MUTED,true));
         Spinner modes = new Spinner(this);
