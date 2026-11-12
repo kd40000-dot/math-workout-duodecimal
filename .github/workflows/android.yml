@@ -30,19 +30,19 @@ jobs:
         run: gradle --no-daemon :app:assembleDebug
       - uses: actions/upload-artifact@v4
         with:
-          name: duodecimal-workout-1.2.0-apk
+          name: duodecimal-workout-1.3.0-apk
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
       - name: Publish directly downloadable APK on GitHub Releases
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk Duodecimal-Workout-1.2.0.apk
-          if gh release view v1.2.0 >/dev/null 2>&1; then
-            gh release upload v1.2.0 Duodecimal-Workout-1.2.0.apk --clobber
+          cp app/build/outputs/apk/debug/app-debug.apk Duodecimal-Workout-1.3.0.apk
+          if gh release view v1.3.0 >/dev/null 2>&1; then
+            gh release upload v1.3.0 Duodecimal-Workout-1.3.0.apk --clobber
           else
-            gh release create v1.2.0 Duodecimal-Workout-1.2.0.apk \
+            gh release create v1.3.0 Duodecimal-Workout-1.3.0.apk \
               --target "$GITHUB_SHA" \
-              --title "Duodecimal Workout 1.2.0" \
-              --notes "Automatically accepts correct duodecimal answers and advances in regular and custom practice, with a brief correctness confirmation. Incorrect entries still require CHECK. Debug-signed build."
+              --title "Duodecimal Workout 1.3.0" \
+              --notes "Adds Draft A modular numerals across all questions, keypad digits, answers, tables, and scores. Four bodies mod 4 and three caps mod 3. Body 3 uses the exact regular-weight duodecimal el outline. Correct answers continue to auto-advance. Debug-signed build."
           fi
