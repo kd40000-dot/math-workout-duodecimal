@@ -32,19 +32,19 @@ jobs:
         run: gradle --no-daemon :app:assembleDebug
       - uses: actions/upload-artifact@v4
         with:
-          name: duodecimal-workout-1.5.0-apk
+          name: duodecimal-workout-1.5.1-apk
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
       - name: Publish directly downloadable APK on GitHub Releases
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk Duodecimal-Workout-1.5.0.apk
-          if gh release view v1.5.0 >/dev/null 2>&1; then
-            gh release upload v1.5.0 Duodecimal-Workout-1.5.0.apk --clobber
+          cp app/build/outputs/apk/debug/app-debug.apk Duodecimal-Workout-1.5.1.apk
+          if gh release view v1.5.1 >/dev/null 2>&1; then
+            gh release upload v1.5.1 Duodecimal-Workout-1.5.1.apk --clobber
           else
-            gh release create v1.5.0 Duodecimal-Workout-1.5.0.apk \
+            gh release create v1.5.1 Duodecimal-Workout-1.5.1.apk \
               --target "$GITHUB_SHA" \
-              --title "Duodecimal Workout 1.5.0" \
-              --notes "Adds Visual Multiplication training: cap modulo 3, body modulo 4, CRT final-digit reconstruction and base-12 carries. Existing practice modes preserved."
+              --title "Duodecimal Workout 1.5.1" \
+              --notes "Adds bidirectional Glyph Recognition with a shuffled 12-glyph deck and first-try scoring, alongside Visual Multiplication training for cap, body, final digit and carry."
           fi
