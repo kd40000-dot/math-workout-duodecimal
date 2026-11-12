@@ -185,14 +185,14 @@ public final class MainActivity extends Activity {
         newProblem();
     }
     private View styledItem(View v,int color) {
-        if (v instanceof TextView) {TextView t=(TextView)v;t.setTextColor(color);t.setTextSize(16);t.setPadding(dp(8),dp(10),dp(8),dp(10));}
+        if (v instanceof TextView) {TextView t=(TextView)v;t.setText(Numerals.render(t.getText()));t.setTextColor(color);t.setTextSize(16);t.setPadding(dp(8),dp(10),dp(8),dp(10));}
         return v;
     }
     private LinearLayout vertical() {LinearLayout v=new LinearLayout(this);v.setOrientation(LinearLayout.VERTICAL);return v;}
     private LinearLayout horizontal(){LinearLayout v=new LinearLayout(this);v.setOrientation(LinearLayout.HORIZONTAL);return v;}
     private int dp(int n){return (int)(n*getResources().getDisplayMetrics().density+0.5f);}
     private TextView label(String value,int sp,int color,boolean bold) {
-        TextView v=new TextView(this); v.setText(value);v.setTextColor(color);v.setTextSize(sp);
+        TextView v=new Numerals.NumeralTextView(this); v.setText(value);v.setTextColor(color);v.setTextSize(sp);
         if (bold)v.setTypeface(Typeface.DEFAULT,Typeface.BOLD);
         return v;
     }
@@ -200,7 +200,7 @@ public final class MainActivity extends Activity {
         GradientDrawable drawable=new GradientDrawable();drawable.setColor(color);drawable.setCornerRadius(dp(radius));return drawable;
     }
     private Button button(String value,int bg,int fg) {
-        Button b=new Button(this);b.setText(value);b.setTextSize(20);b.setAllCaps(false);
+        Button b=new Numerals.NumeralButton(this);b.setText(value);b.setTextSize(20);b.setAllCaps(false);
         b.setTextColor(fg);b.setTypeface(Typeface.DEFAULT,Typeface.BOLD);
         b.setBackground(round(bg,10));return b;
     }
