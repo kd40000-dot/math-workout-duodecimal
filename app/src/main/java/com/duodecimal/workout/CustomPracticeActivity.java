@@ -552,20 +552,21 @@ public final class CustomPracticeActivity extends Activity {
     }
 
     private Spinner spinner(String[] choices, int index) {
-        Spinner spinner = new Spinner(this);
+        Spinner spinner = new Spinner(this, Spinner.MODE_DROPDOWN);
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_spinner_item, choices) {
             @Override public View getView(int i, View existing, ViewGroup parent) {
                 return styleOption(super.getView(i, existing, parent), FG);
             }
             @Override public View getDropDownView(int i, View existing, ViewGroup parent) {
-                return styleOption(super.getDropDownView(i, existing, parent), BG);
+                return styleOption(super.getDropDownView(i, existing, parent), FG);
             }
         };
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
         spinner.setSelection(index);
         spinner.setBackground(round(SURFACE, 10));
+        spinner.setPopupBackgroundDrawable(round(SURFACE, 10));
         spinner.setPadding(dp(8), 0, dp(7), 0);
         return spinner;
     }
