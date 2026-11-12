@@ -52,6 +52,38 @@ The workflow publishes the standalone app to GitHub Releases. Android debug sign
 
 ---
 
+## Original Math Tricks Workout — Draft A glyph patch (2026-11-12)
+
+The latest **private test APK** incorporates Draft A numeral glyphs on top of
+the previously patched Math Tricks Workout 2.8.5 original binary. The original
+package is still `com.sankhyantra.mathstricks` and the original user data
+format is unchanged.
+
+The glyphs are drawn from the **same** `Numerals.java` and `ModularDigits.java`
+source as standalone Duodecimal Workout 1.3.0. We compile these two classes
+along with `reverse-patch/java/com/sankhyantra/mathstricks/duo/OriginalGlyphInstaller.java`
+as an independent `classes6.dex` in
+`.github/workflows/build-original-glyph-dex.yml`. An activity lifecycle
+callback scans TextView hierarchies, adds vector glyph spans for all
+base-twelve digit codepoints `0-9↊↋`, and watches dynamic text updates.
+Input values and arithmetic checking are NOT altered by the renderer.
+
+For a reproducible build, decompile the **already base-12-patched original APK**
+into `reverse-patch/scripts/decoded`, then run
+`reverse-patch/scripts/apply_modular_glyphs.py`, rebuild with Apktool, append
+the compiled `classes6.dex`, and **sign as the last step**, with
+`apksigner --lib-page-alignment 16384`. Use the same private signing key that
+signed the previous NativeLib-Fixed test APK to avoid a signature mismatch.
+
+The local binary successfully rebuilt, and has passed ZIP CRC, APK v2/v3
+signature and 16-KiB alignment checks. Its native library is byte-identical
+to the prior patched APK. The patch has **not** been tested on a physical
+device; independent games with graphical (non-TextView) digit rendering may
+require specific future patches.
+
+**Do not upload** the proprietary original APK or its private signer keys
+into this public GitHub repository.
+
 ## Archived original-app reverse-engineering notes
 
 These files document the separate effort to modify the original Math Tricks Workout APK while preserving its package and screens.
