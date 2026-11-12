@@ -246,7 +246,7 @@ public final class Numerals {
                                      float cx, float cy, float height, int color) {
         if (component < 0 || component >= (cap ? 3 : 4))
             throw new IllegalArgumentException("Invalid modular component");
-        float scale = height / (cap ? 64f : 86f);
+        float scale = height / (cap ? 40f : 86f);
         canvas.save();
         canvas.translate(cx - 50f * scale, cy - (cap ? 21f : 74f) * scale);
         canvas.scale(scale, scale);
