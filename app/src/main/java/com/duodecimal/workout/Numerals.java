@@ -236,6 +236,32 @@ public final class Numerals {
         }
     }
 
+    /**
+     * Draw only a component of a glyph, using the EXACT same paths as
+     * the full numeral renderer. Used by the visual-addition choices.
+     *
+     * cx/cy are the intended center; height is the preview drawing height.
+     */
+    public static void drawComponent(Canvas canvas, boolean cap, int component,
+                                     float cx, float cy, float height, int color) {
+        if (component < 0 || component >= (cap ? 3 : 4))
+            throw new IllegalArgumentException("Invalid modular component");
+        float scale = height / (cap ? 64f : 86f);
+        canvas.save();
+        canvas.translate(cx - 50f * scale, cy - (cap ? 21f : 74f) * scale);
+        canvas.scale(scale, scale);
+
+        Paint partPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        partPaint.setColor(color);
+        partPaint.setStrokeCap(Paint.Cap.ROUND);
+        partPaint.setStrokeJoin(Paint.Join.ROUND);
+        partPaint.setStrokeWidth(cap ? 7f : 6.6f);
+        partPaint.setStyle(cap ? (component == 2 ? Paint.Style.FILL : Paint.Style.STROKE)
+            : (component == 3 ? Paint.Style.FILL : Paint.Style.STROKE));
+        canvas.drawPath(cap ? CAP_PATHS[component] : BODY_PATHS[component], partPaint);
+        canvas.restore();
+    }
+
     private static void drawDigit(Canvas canvas, int value, float x, float y,
                                   float size, int color) {
             float scale = size / 112f;
