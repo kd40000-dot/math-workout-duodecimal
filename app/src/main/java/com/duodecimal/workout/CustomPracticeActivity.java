@@ -413,11 +413,19 @@ public final class CustomPracticeActivity extends Activity {
             content.addView(row, new LinearLayout.LayoutParams(-1, dp(66)));
             for (int c = 0; c < 4; c++) {
                 final String digit = digits[4*r+c];
-                Button button = button(digit, SURFACE, FG, 22);
+                // Button's framework text transformation can discard ReplacementSpan
+                // glyphs on some Android versions. Use the same numeral-aware
+                // TextView as the question and answer, with a clickable key surface.
+                TextView key = label(digit, 27, FG, true);
+                key.setGravity(Gravity.CENTER);
+                key.setBackground(round(SURFACE, 10));
+                key.setClickable(true);
+                key.setFocusable(true);
+                key.setContentDescription("Digit " + digit);
                 LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, -1, 1);
                 lp.setMargins(dp(3), dp(3), dp(3), dp(3));
-                row.addView(button, lp);
-                button.setOnClickListener(v -> append(digit));
+                row.addView(key, lp);
+                key.setOnClickListener(v -> append(digit));
             }
         }
         LinearLayout actions = horizontal();
@@ -466,6 +474,8 @@ public final class CustomPracticeActivity extends Activity {
 
     private void showTyped() {
         response.setText(typed.length() == 0 ? "_" : typed.toString());
+        // Force the independently drawn numeral glyphs to repaint after every key.
+        response.invalidate();
         feedback.setText("");
     }
 
