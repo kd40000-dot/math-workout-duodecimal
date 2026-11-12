@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.content.SharedPreferences;
 import android.content.Intent;
+import android.os.Handler;
+import android.os.Looper;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.view.Gravity;
@@ -31,6 +33,35 @@ public final class MainActivity extends Activity {
     private DozenMath.Problem current;
     private int mode, difficulty, correct, attempted, streak, best;
     private boolean solved;
+    // Short visual confirmation, then proceed without requiring NEXT.
+    private static final long AUTO_ADVANCE_MS = 400L;
+    private final Handler autoAdvanceHandler = new Handler(Looper.getMainLooper());
+    private Runnable pendingAdvance;
+    private int questionSerial;
+
+    private void cancelAutoAdvance() {
+        if (pendingAdvance != null) {
+            autoAdvanceHandler.removeCallbacks(pendingAdvance);
+            pendingAdvance = null;
+        }
+    }
+
+    private void advanceAfterCorrect() {
+        cancelAutoAdvance();
+        final int answeredQuestion = questionSerial;
+        pendingAdvance = () -> {
+            pendingAdvance = null;
+            if (!isFinishing() && !isDestroyed() && solved && questionSerial == answeredQuestion) {
+                newProblem();
+            }
+        };
+        autoAdvanceHandler.postDelayed(pendingAdvance, AUTO_ADVANCE_MS);
+    }
+
+    @Override protected void onDestroy() {
+        cancelAutoAdvance();
+        super.onDestroy();
+    }
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -177,13 +208,22 @@ public final class MainActivity extends Activity {
     private void append(String digit) {
         if (solved || input.length()>14) return;
         input.append(digit);displayInput();
+        autoAcceptIfCorrect();
     }
     private void displayInput() {
         answerLabel.setText(input.length()==0?"_":input.toString());
         feedbackLabel.setText("");
     }
+    private void autoAcceptIfCorrect() {
+        if (!solved && current != null && DozenMath.isCorrect(input.toString(), current.answer)) {
+            check();
+        }
+    }
+
     private void newProblem() {
+        cancelAutoAdvance();
         if (problemLabel==null) return;
+        questionSerial++;
         current=engine.next(mode,difficulty);
         input.setLength(0);
         solved=false;
@@ -195,6 +235,7 @@ public final class MainActivity extends Activity {
         updateStats();
     }
     private void check() {
+        if (solved || current == null) return;
         Long entered=DozenMath.parse(input.toString());
         if (entered==null) {feedbackLabel.setTextColor(RED);feedbackLabel.setText("Enter a base-12 number.");return;}
         attempted++;
@@ -203,6 +244,7 @@ public final class MainActivity extends Activity {
             correct++;streak++;best=Math.max(best,streak);
             feedbackLabel.setTextColor(GREEN);
             feedbackLabel.setText("Correct! ✓");
+            advanceAfterCorrect();
         } else {
             streak=0;
             feedbackLabel.setTextColor(RED);
