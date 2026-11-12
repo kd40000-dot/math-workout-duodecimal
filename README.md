@@ -1,6 +1,36 @@
-# Math Tricks Workout 2.8.5 — original-app duodecimal patch
+# Duodecimal Workout — standalone Android app
 
-**Current primary goal: modify the user's ORIGINAL Math Tricks Workout APK to use base twelve**, preserving its original screens, progression, exercises and package `com.sankhyantra.mathstricks`. This is a reverse-engineering effort, **not** a replacement app.
+This repository contains **two different projects**. For the current user's request, the active app is the **separate, original duodecimal workout app** with package `com.duodecimal.workout`, found under `app/`. The `reverse-patch/` folder contains an unrelated, experimental patch for Math Tricks Workout 2.8.5 and is retained for reference only.
+
+## Version 1.1.0 — Custom Practice
+
+On the home screen, tap **CUSTOM PRACTICE · SELECT FACTS →**. This opens a dedicated page where you can:
+
+- Choose addition, subtraction, multiplication, or exact division.
+- Set first-operand and second-operand lengths independently (1–4 base-12 digits).
+- Tap the result cells of a selectable arithmetic table. Rows are the **first** operand; columns are the **second** operand.
+- Navigate tables larger than 12×12 using row/column page controls and slider jumps. One-digit tables cover 0–↋ in both directions.
+- Save independent sets of exact operand pairs for every operation and digit-length combination. Tapping `3+5` does not automatically include `5+3`.
+- Select exactly 1, 2, 3, 5, `10₁₂` (12 decimal), or `20₁₂` (24 decimal) repetitions for **each** selected fact.
+- Complete the shuffled practice session using the app's ↊/↋ keypad, view the score, and repeat the same selections.
+
+For exact division, invalid/zero-divisor/non-integer cells are disabled. All values, page ranges, repetitions, session counts, prompts, answers and results use base twelve.
+
+### Building the standalone Android app
+
+Use **Actions → Build Duodecimal Workout APK** or run:
+
+```bash
+gradle --no-daemon :app:testDebugUnitTest :app:assembleDebug
+```
+
+The workflow publishes the standalone app to GitHub Releases. Android debug signing keys may differ across GitHub Actions runners, so updating an older debug-signed installation may require uninstalling the old build. A permanent signing secret is recommended before relying on seamless future upgrades.
+
+---
+
+## Archived original-app reverse-engineering notes
+
+These files document the separate effort to modify the original Math Tricks Workout APK while preserving its package and screens.
 
 The project previously started with a standalone prototype (`app/`, Android package `com.duodecimal.workout`). The prototype remains as a reference only, and its CI does **not** auto-publish on every patch. The old GitHub release v1.0.0 contains that **standalone prototype, not the patched original app**.
 
@@ -44,6 +74,6 @@ See `reverse-patch/scripts/sign_original_apk.sh` and `verify_installable.py`. Th
 
 Since this is a patch of the original APK but signed using a different key, Android's normal package manager will reject *updating* a currently installed developer-signed version with `INSTALL_FAILED_UPDATE_INCOMPATIBLE`. Back up the original app data before removing it and installing the patched app. Avoid publishing the modified proprietary APK or the signing keystore in this public repo. Keep the privately generated signing key for future patch updates.
 
-## Retired standalone prototype
+## Standalone app status
 
-The `app/` folder is a separate, independent calculator trainer created earlier. It is not the target of ongoing development. The original-app reverse-engineering files in `reverse-patch/` are now authoritative.
+The separate `app/` folder is active again in version 1.1.0 with Custom Practice. The reverse-engineering files in `reverse-patch/` remain separate.
