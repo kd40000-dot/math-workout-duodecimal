@@ -137,7 +137,7 @@ public final class VisualAdditionActivity extends Activity {
         checkbox("Show pattern hints", hints, checked -> { hints = checked; saveSetup(); });
         checkbox("Show traditional base-12 digit labels (learning aid)", showValues,
             checked -> { showValues = checked; saveSetup(); });
-        checkbox("60-second challenge", timed, checked -> { timed = checked; saveSetup(); });
+        checkbox("One-minute timed challenge", timed, checked -> { timed = checked; saveSetup(); });
         gap(12);
         LinearLayout lesson = vertical();
         lesson.setPadding(dp(14), dp(15), dp(14), dp(15));
@@ -434,8 +434,10 @@ public final class VisualAdditionActivity extends Activity {
         }
         stageResolved = true;
         feedback.setTextColor(GREEN);
-        feedback.setText(questionPerfect ? "Correct ✓" : "Correct ✓ · practice retry");
-        if (stageIndex+1 == VisualAddition.stages(mode).length) {
+        boolean finishedQuestion = stageIndex+1 == VisualAddition.stages(mode).length;
+        feedback.setText(finishedQuestion ? "✓ " + current.equation()
+            : (questionPerfect ? "Correct ✓" : "Correct ✓ · practice retry"));
+        if (finishedQuestion) {
             attemptedQuestions++;
             if(questionPerfect) correctQuestions++;
             prefs.edit().putInt("visual_mode_tried_"+mode,
@@ -457,7 +459,7 @@ public final class VisualAdditionActivity extends Activity {
                 showQuestion();
             }
         };
-        handler.postDelayed(pending,FEEDBACK_DELAY_MS);
+        handler.postDelayed(pending,finishedQuestion ? 850 : FEEDBACK_DELAY_MS);
     }
 
     private void cancelPendingOnly() {
