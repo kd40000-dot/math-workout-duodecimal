@@ -90,6 +90,11 @@ public final class MainActivity extends Activity {
         body.addView(visualAddition, new LinearLayout.LayoutParams(-1,dp(52)));
         visualAddition.setOnClickListener(v ->
             startActivity(new Intent(this, VisualAdditionActivity.class)));
+        addSpace(body,10);
+        Button visualMultiply = button("VISUAL MULTIPLICATION · CAP × BODY →", SURFACE, CYAN);
+        body.addView(visualMultiply, new LinearLayout.LayoutParams(-1,dp(52)));
+        visualMultiply.setOnClickListener(v ->
+            startActivity(new Intent(this, VisualMultiplicationActivity.class)));
         addSpace(body,16);
         body.addView(label("Exercise",14,MUTED,true));
         Spinner modes = new Spinner(this, Spinner.MODE_DROPDOWN);
