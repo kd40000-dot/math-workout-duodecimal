@@ -2,6 +2,44 @@
 
 This repository contains **two different projects**. For the current user's request, the active app is the **separate, original duodecimal workout app** with package `com.duodecimal.workout`, found under `app/`. The `reverse-patch/` folder contains an unrelated, experimental patch for Math Tricks Workout 2.8.5 and is retained for reference only.
 
+## Version 1.4.0 — Visual Addition Training
+
+Tap **VISUAL ADDITION · CAP + BODY →** on the standalone Duodecimal Workout home
+screen. This is not a patch to the proprietary Math Tricks Workout game.
+
+The dedicated training screen teaches how to add numbers using our Draft A
+modular numeral system, without changing the existing custom practice or
+standard workout modes. Five practice modes are available:
+
+1. **Caps · mod 3:** select the resulting flat bar, Vietnamese breve, or dot.
+   Each pass contains all nine ordered cap-pair combinations.
+2. **Bodies · mod 4:** select the resulting loop, short ⊺, V, or regular-weight
+   ↋ body. Each pass contains all sixteen ordered body-pair combinations.
+3. **Combine · no carry:** select cap and then body; all presented sums are
+   below `10₁₂` (12 decimal).
+4. **Carry recognition:** choose whether each one-digit addition produces a
+   carry. Both carry and no-carry cases are included.
+5. **Full visual addition:** answer the cap, body, and carry questions in
+   sequence to recover the complete base-twelve sum.
+
+All five use the actual **vector component paths** in
+`app/src/main/java/com/duodecimal/workout/Numerals.java`, never approximate
+unicode characters for the isolated components. The complete addends,
+result, practice counts, and timer are presented in base twelve using the
+existing font-independent renderer. Separate component and drill accuracy
+statistics are stored locally. Wrong answers can be retried without recording
+multiple attempts, while first-try accuracy is tracked. Correct selections
+advance automatically with a short confirmation and the finished sum is shown.
+
+Options include 10₁₂, 20₁₂, or 40₁₂ questions, guided hints, an optional
+traditional-notation aid, a one-minute timed challenge, and tappable reference
+tables for the cap/body addition patterns.
+
+The implementation is split into the pure Java `VisualAddition.java` arithmetic
+engine, `VisualAdditionActivity.java` for the UI, and a
+`VisualAdditionTest.java` unit test that exhaustively checks all **144**
+single-digit ordered sums and their cap/body/carry values.
+
 ## Version 1.3.0 — Draft A modular numerals
 
 The standalone app now **renders all base-twelve digits** in the custom glyph
