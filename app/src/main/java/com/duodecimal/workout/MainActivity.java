@@ -58,6 +58,11 @@ public final class MainActivity extends Activity {
         autoAdvanceHandler.postDelayed(pendingAdvance, AUTO_ADVANCE_MS);
     }
 
+    @Override public void onBackPressed() {
+        if(DrawerNavigation.close(this))return;
+        super.onBackPressed();
+    }
+
     @Override protected void onDestroy() {
         cancelAutoAdvance();
         super.onDestroy();
