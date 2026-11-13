@@ -427,9 +427,12 @@ public final class CustomPracticeActivity extends Activity {
                             .setTitle(PracticeGrid.expression(operation,a,b))
                             .setMessage("Status: "+status+"\nCorrect: "+right+"/"+n+
                                 "\nAccuracy: "+(n==0?0:(100*right/n))+"%"+
-                                "\nAverage response: "+(int)learning.averageMs(key)+" ms"+
+                                "\nRecent correct-answer time: "+(int)learning.recentCorrectMs(key)+" ms"+
                                 "\nCorrect streak: "+learning.streak(key)+
-                                "\nMastery: at least 3 correct, 80% accuracy, two consecutive correct, and an average under 8 seconds.")
+                                "\nMastery target: "+AdaptiveSettings.minCorrect(prefs)+" correct, "+
+                                AdaptiveSettings.accuracy(prefs)+"% accuracy, streak "+
+                                AdaptiveSettings.streak(prefs)+", "+
+                                (AdaptiveSettings.targetMs(prefs)/1000)+" seconds.")
                             .setPositiveButton("OK",null).show();
                     });
                 } else if (valid) {
