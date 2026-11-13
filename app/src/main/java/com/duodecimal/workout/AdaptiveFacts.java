@@ -10,9 +10,12 @@ import java.util.Random;
 public final class AdaptiveFacts {
     private final SharedPreferences prefs;
     private final String prefix;
-    public AdaptiveFacts(SharedPreferences prefs, int operation, int digitsA, int digitsB) {
+    private final String unlockKey;
+    public AdaptiveFacts(SharedPreferences prefs, int operation, int digitsA, int digitsB,
+                         int rowPage, int colPage) {
         this.prefs=prefs;
         this.prefix="adaptive_v1_"+operation+"_"+digitsA+"_"+digitsB+"_";
+        this.unlockKey=prefix+"unlocked_"+rowPage+"_"+colPage;
     }
     private String id(long key) {
         return prefix+PracticeGrid.firstOperand(key)+"_"+PracticeGrid.secondOperand(key)+"_";
@@ -39,11 +42,11 @@ public final class AdaptiveFacts {
     }
     public int unlocked(int total) {
         if(total<=0)return 0;
-        int count=Math.max(1,Math.min(total,prefs.getInt(prefix+"unlocked",4)));
+        int count=Math.max(1,Math.min(total,prefs.getInt(unlockKey,4)));
         return count;
     }
     public void saveUnlocked(int count) {
-        prefs.edit().putInt(prefix+"unlocked",count).apply();
+        prefs.edit().putInt(unlockKey,count).apply();
     }
     /** Deterministic progression for the visible page, sorted row-major. */
     public List<Long> candidates(int operation,int digitA,int digitB,int rowPage,int colPage) {
