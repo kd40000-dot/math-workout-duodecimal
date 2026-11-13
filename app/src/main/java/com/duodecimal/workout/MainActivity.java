@@ -78,7 +78,7 @@ public final class MainActivity extends Activity {
         body.setPadding(dp(16),dp(20),dp(16),dp(28));
         scroll.addView(body);
         setContentView(scroll);
-        AppNavigation.add(this,body,AppNavigation.MORE);
+        DrawerNavigation.addBar(this,body,"Other workouts",DrawerNavigation.MORE);
         TextView title=label("More workouts",29,PURPLE,true);
         body.addView(title);
         body.addView(label("Explore mixed exercises and challenge yourself beyond the adaptive fact table.",14,MUTED,false));
