@@ -15,7 +15,7 @@ import android.widget.TextView;
 
 /** AnkiDroid-inspired left navigation drawer, with a single app-bar menu. */
 public final class DrawerNavigation {
-    public static final int PRACTICE=0, BROWSE=1, LEARN=2, STATS=3, MORE=4, SETTINGS=5;
+    public static final int PRACTICE=0, BROWSE=1, LEARN=2, STATS=3, MORE=4, SETTINGS=5, ABOUT=6, TUTORIAL=7;
     private static final String TAG="duodecimal-navigation-drawer";
     private static final int BG=0xFF282A36, PANEL=0xFF343644, SURFACE=0xFF44475A;
     private static final int FG=0xFFF8F8F2, MUTED=0xFFB5B8C6, PURPLE=0xFFBD93F9, CYAN=0xFF8BE9FD;
@@ -124,6 +124,8 @@ public final class DrawerNavigation {
         item(activity,items,"Statistics","Accuracy and fluency",STATS,selected);
         section(activity,items,"LEARN");
         item(activity,items,"Learning tools","Glyphs and visual arithmetic",LEARN,selected);
+        item(activity,items,"Why base twelve?","The ideas behind our numbers",ABOUT,selected);
+        item(activity,items,"Beginner tutorial","Replay the introduction",TUTORIAL,selected);
         section(activity,items,"OTHER");
         item(activity,items,"Other workouts","Mixed arithmetic exercises",MORE,selected);
         item(activity,items,"Settings","Goals and unlocking rules",SETTINGS,selected);
@@ -182,6 +184,8 @@ public final class DrawerNavigation {
             case STATS:target=StatisticsActivity.class;break;
             case MORE:target=MainActivity.class;break;
             case SETTINGS:target=SettingsActivity.class;break;
+            case ABOUT:target=AboutDuodecimalActivity.class;break;
+            case TUTORIAL:target=TutorialActivity.class;break;
             default:return;
         }
         Intent intent=new Intent(a,target);
