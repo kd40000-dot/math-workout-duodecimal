@@ -101,7 +101,9 @@ public final class CustomPracticeActivity extends Activity {
         repsIndex = clamp(prefs.getInt("custom_reps_index", 3), 0, PracticeGrid.REP_CHOICES.length - 1);
         loadSelected();
         adaptive = prefs.getBoolean("custom_adaptive_enabled", true);
-        showTable = prefs.getBoolean("custom_show_table", false);
+        showTable = getIntent().hasExtra("open_fact_table") ?
+            getIntent().getBooleanExtra("open_fact_table",false) :
+            prefs.getBoolean("custom_show_table", false);
         learning = new AdaptiveFacts(prefs,operation,digitA,digitB,rowPage,colPage);
         scroll = new ScrollView(this);
         scroll.setFillViewport(true);
@@ -110,6 +112,16 @@ public final class CustomPracticeActivity extends Activity {
         content.setPadding(dp(14), dp(18), dp(14), dp(30));
         scroll.addView(content);
         setContentView(scroll);
+        showConfiguration();
+    }
+
+    @Override protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        if(intent.hasExtra("open_fact_table")){
+            showTable=intent.getBooleanExtra("open_fact_table",false);
+            prefs.edit().putBoolean("custom_show_table",showTable).apply();
+        }
         showConfiguration();
     }
 
@@ -153,7 +165,6 @@ public final class CustomPracticeActivity extends Activity {
         questionSerial++;
         session = null;
         content.removeAllViews();
-        AppNavigation.add(this,content,AppNavigation.PRACTICE);
         header("Practice", "Master one fact at a time. Your practice adapts to your speed and accuracy.");
         Button adaptiveButton = button(adaptive ? "Learning mode: Adaptive  ·  Change to manual" :
             "Learning mode: Manual  ·  Change to adaptive", SURFACE, FG, 14);
@@ -171,7 +182,11 @@ public final class CustomPracticeActivity extends Activity {
             content.addView(label("Unlocked "+DozenMath.format(unlocked)+"/"+
                 DozenMath.format(pool.size())+"  ·  Mastered "+DozenMath.format(mastered),
                 17,CYAN,true));
-            content.addView(label("Master 80% of available facts to unlock two more.",13,MUTED,false));
+            int required=AdaptiveSettings.requireAll(prefs)?100:AdaptiveSettings.unlockPercent(prefs);
+            content.addView(label("Unlock "+DozenMath.format(AdaptiveSettings.batch(prefs))+
+                " new facts at "+DozenMath.format(required)+
+                "% mastery · Target "+DozenMath.format(AdaptiveSettings.targetMs(prefs)/1000)+
+                " seconds.",13,MUTED,false));
             addSpace(10);
             Button go=button("Start practice",PURPLE,BG,18);
             content.addView(go,new LinearLayout.LayoutParams(-1,dp(55)));
@@ -441,7 +456,7 @@ public final class CustomPracticeActivity extends Activity {
     private void startPractice() {
         if(adaptive){
             List<Long> pool=learning.candidates(operation,digitA,digitB,rowPage,colPage);
-            session=learning.session(pool,24,random);
+            session=learning.session(pool,AdaptiveSettings.questions(prefs),random);
             if(session.isEmpty())return;
         } else {
             if (selected.isEmpty()) return;
@@ -640,6 +655,10 @@ public final class CustomPracticeActivity extends Activity {
     }
 
     private void header(String title, String description) {
+        DrawerNavigation.addBar(this,content,
+            session!=null?"Practice":showTable?"Browse facts":"Practice",
+            session!=null?DrawerNavigation.PRACTICE:
+                showTable?DrawerNavigation.BROWSE:DrawerNavigation.PRACTICE);
         if (session != null) {
             TextView back = label("‹  Back to practice", 15, CYAN, true);
             back.setMinHeight(dp(48));
@@ -759,6 +778,7 @@ public final class CustomPracticeActivity extends Activity {
     private void scrollToTop() { scroll.post(() -> scroll.scrollTo(0, 0)); }
 
     @Override public void onBackPressed() {
+        if(DrawerNavigation.close(this))return;
         if (session != null) showConfiguration();
         else super.onBackPressed();
     }
