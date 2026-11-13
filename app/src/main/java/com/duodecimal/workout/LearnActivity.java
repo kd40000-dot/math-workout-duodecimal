@@ -78,7 +78,7 @@ public final class LearnActivity extends Activity {
         card.addView(label(detail,14,FG,false));
         card.setContentDescription(title+". "+detail);
         LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);
-        lp.minimumHeight=dp(80);
+        card.setMinimumHeight(dp(80));
         parent.addView(card,lp);
         card.setOnClickListener(v->startActivity(new Intent(this,target)));
     }
