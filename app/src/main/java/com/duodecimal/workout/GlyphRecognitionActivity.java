@@ -44,7 +44,7 @@ public final class GlyphRecognitionActivity extends Activity {
         scroll.addView(root);setContentView(scroll);setup();
     }
     @Override protected void onDestroy(){cancel();super.onDestroy();}
-    @Override public void onBackPressed(){if(!deck.isEmpty())setup();else super.onBackPressed();}
+    @Override public void onBackPressed(){if(DrawerNavigation.close(this))return;if(!deck.isEmpty())setup();else super.onBackPressed();}
     private void cancel(){if(pending!=null){handler.removeCallbacks(pending);pending=null;}}
     private int dp(int n){return (int)(getResources().getDisplayMetrics().density*n+.5f);}
     private GradientDrawable bg(int color){GradientDrawable d=new GradientDrawable();
@@ -59,9 +59,7 @@ public final class GlyphRecognitionActivity extends Activity {
     }
     private void gap(int h){root.addView(new View(this),new LinearLayout.LayoutParams(1,dp(h)));}
     private void header(){
-        TextView back=text("‹  WORKOUT",14,CYAN,false);
-        root.addView(back,new LinearLayout.LayoutParams(-1,dp(45)));
-        back.setOnClickListener(v->finish());
+        DrawerNavigation.addBar(this,root,"Glyph recognition",DrawerNavigation.LEARN);
         root.addView(text("Glyph Recognition",27,PURPLE,false),
             new LinearLayout.LayoutParams(-1,dp(57)));
     }
