@@ -26,7 +26,7 @@ public final class LearnActivity extends Activity {
         root.setOrientation(LinearLayout.VERTICAL);
         scroll.addView(root);
         setContentView(scroll);
-        AppNavigation.add(this,root,AppNavigation.LEARN);
+        DrawerNavigation.addBar(this,root,"Learn",DrawerNavigation.LEARN);
         TextView title=label("Learn",30,PURPLE,true);
         root.addView(title);
         TextView subtitle=label("Understand the glyphs, then practice their patterns.",14,MUTED,false);
@@ -45,6 +45,10 @@ public final class LearnActivity extends Activity {
         gap(root,24);
         TextView note=label("Your numerals encode digit mod 3 in the cap and digit mod 4 in the body. These two components uniquely determine every base-twelve digit.",13,MUTED,false);
         root.addView(note);
+    }
+    @Override public void onBackPressed(){
+        if(DrawerNavigation.close(this))return;
+        super.onBackPressed();
     }
     private int dp(int n){return Math.round(n*getResources().getDisplayMetrics().density);}
     private GradientDrawable background(int color) {
