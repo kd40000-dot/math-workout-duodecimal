@@ -11,11 +11,13 @@ import java.util.Random;
 public final class AdaptiveFacts {
     private final SharedPreferences prefs;
     private final String prefix;
+    private final int operation, digitsA, digitsB;
     private final String unlockKey;
 
     public AdaptiveFacts(SharedPreferences prefs, int operation, int digitsA, int digitsB,
                          int rowPage, int colPage) {
         this.prefs=prefs;
+        this.operation=operation;this.digitsA=digitsA;this.digitsB=digitsB;
         // Retain existing v1 keys: changing the UI or thresholds does not erase learning history.
         this.prefix="adaptive_v1_"+operation+"_"+digitsA+"_"+digitsB+"_";
         this.unlockKey=prefix+"unlocked_"+rowPage+"_"+colPage;
@@ -54,6 +56,9 @@ public final class AdaptiveFacts {
             editor.putFloat(id(key)+"recent_correct_ms",old<=0?ms:old*.7f+ms*.3f);
         }
         editor.apply();
+        PracticeHistory.record(prefs,operation,digitsA,digitsB,
+            PracticeGrid.firstOperand(key),PracticeGrid.secondOperand(key),
+            right,elapsedMs);
         if(mastered(key))prefs.edit().putBoolean(id(key)+"ever_mastered",true).apply();
     }
 
