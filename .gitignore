@@ -1,0 +1,13 @@
+# Signing credentials: store in GitHub Actions encrypted secrets, never in Git.
+/*.jks
+/*.keystore
+/*.p12
+/*.pfx
+*.key
+*.pem
+app/*.jks
+app/*.keystore
+app/*.p12
+local.properties
+.gradle/
+**/build/
