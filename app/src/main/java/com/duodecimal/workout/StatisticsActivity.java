@@ -96,8 +96,18 @@ public final class StatisticsActivity extends Activity {
     }
     private int dp(int n){return Math.round(n*getResources().getDisplayMetrics().density);}
     private TextView label(String text,int size,int color,boolean bold){
-        TextView v=new Numerals.NumeralTextView(this);
+        // Statistics must use ordinary Arabic numerals in base ten.
+        TextView v=new TextView(this);
         v.setText(text);
+        v.setTextSize(size);
+        v.setTextColor(color);
+        if(bold)v.setTypeface(Typeface.DEFAULT,Typeface.BOLD);
+        return v;
+    }
+    private TextView factLabel(String expression,int size,int color,boolean bold){
+        // Only arithmetic facts and operand headers use the custom glyphs.
+        TextView v=new Numerals.NumeralTextView(this);
+        v.setText(expression);
         v.setTextSize(size);
         v.setTextColor(color);
         if(bold)v.setTypeface(Typeface.DEFAULT,Typeface.BOLD);
@@ -159,12 +169,13 @@ public final class StatisticsActivity extends Activity {
         }
         gap(11);
     }
-    private static String perGross(long numerator,long denominator) {
-        if(denominator<=0)return "—";
-        long share=Math.round(numerator*144.0/denominator);
-        return DozenMath.format(share)+"/100₁₂";
+    private static String percent(long numerator,long denominator) {
+        return StatisticsNumbers.percent(numerator,denominator);
     }
-    private static String amount(long n){return DozenMath.format(n);}
+    private static String amount(long n){return StatisticsNumbers.count(n);}
+    private static String seconds(long milliseconds){
+        return StatisticsNumbers.seconds(milliseconds);
+    }
     private void addProgress(LinearLayout parent,int count,int total){
         ProgressBar bar=new ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal);
         bar.setMax(Math.max(1,total));
@@ -271,14 +282,14 @@ public final class StatisticsActivity extends Activity {
         addProgress(summary,mastered,facts.size());
         innerGap(summary,14);
         summary.addView(label("Answers  "+amount(attempts)+"   ·   Accuracy  "+
-            perGross(correct,attempts),16,FG,true));
+            percent(correct,attempts),16,FG,true));
         innerGap(summary,9);
         summary.addView(label("Mean answer time  "+(attempts==0?"—":
-            PracticeTiming.formatSeconds(Math.round(accumulatedMs/attempts))),
+            seconds(Math.round(accumulatedMs/attempts))),
             15,CYAN,false));
         innerGap(summary,7);
         summary.addView(label("Target answer time  "+
-            PracticeTiming.formatSeconds(AdaptiveSettings.targetMs(prefs)),14,MUTED,false));
+            seconds(AdaptiveSettings.targetMs(prefs)),14,MUTED,false));
 
         heading("Learning curves","From oldest to newest · averages of recent recorded answers.");
         if(history.isEmpty()){
@@ -306,12 +317,12 @@ public final class StatisticsActivity extends Activity {
             }
             lineGraph("Answer time","Lower is faster · dashed line = target",
                 durations,StatisticsChartView.TIME,AdaptiveSettings.targetMs(prefs),
-                PracticeTiming.formatSeconds(Math.round(durations.get(durations.size()-1))));
+                seconds(Math.round(durations.get(durations.size()-1))));
             gap(12);
             lineGraph("Accuracy","Higher is better · dashed line = mastery threshold",
                 accuracies,StatisticsChartView.ACCURACY,
                 AdaptiveSettings.accuracy(prefs)/100f,
-                perGross(Math.round(accuracies.get(accuracies.size()-1)*144),144));
+                percent(Math.round(accuracies.get(accuracies.size()-1)*1000),1000));
             innerGap(root,9);
             root.addView(label("The last "+amount(recent.size())+
                 " recorded answers are grouped into blocks of "+amount(block)+
@@ -332,9 +343,9 @@ public final class StatisticsActivity extends Activity {
                 LinearLayout line=new LinearLayout(this);
                 line.setOrientation(LinearLayout.HORIZONTAL);
                 line.setGravity(Gravity.CENTER_VERTICAL);
-                TextView name=label(fact.expression(),13,FG,false);
+                TextView name=factLabel(fact.expression(),13,FG,false);
                 line.addView(name,new LinearLayout.LayoutParams(0,-2,1));
-                TextView duration=label(PracticeTiming.formatSeconds(Math.round(fact.fluency())),
+                TextView duration=label(seconds(Math.round(fact.fluency())),
                     13,CYAN,true);
                 duration.setGravity(Gravity.END);
                 line.addView(duration);
@@ -346,7 +357,7 @@ public final class StatisticsActivity extends Activity {
                 bar.setProgressTintList(ColorStateList.valueOf(i==0?RED:PURPLE));
                 bar.setProgressBackgroundTintList(ColorStateList.valueOf(HEADER));
                 bar.setContentDescription(fact.expression()+" response time "+
-                    PracticeTiming.formatSeconds(Math.round(fact.fluency())));
+                    seconds(Math.round(fact.fluency())));
                 bars.addView(bar,new LinearLayout.LayoutParams(-1,dp(10)));
                 if(i<limit-1)innerGap(bars,13);
             }
@@ -377,7 +388,7 @@ public final class StatisticsActivity extends Activity {
                 root.addView(toggle,button);
             }
             gap(7);
-            root.addView(label("Times use base-twelve seconds. Accuracy is shown per gross (out of 100₁₂).",
+            root.addView(label("Response times, counts and percentages use ordinary decimal numerals. Facts use duodecimal glyphs.",
                 12,MUTED,false));
         }
 
@@ -426,7 +437,12 @@ public final class StatisticsActivity extends Activity {
         }
     }
     private TextView cell(String content,int size,int color,int width,boolean header){
-        TextView item=label(content,size,color,header);
+        return cell(content,size,color,width,header,false);
+    }
+    private TextView cell(String content,int size,int color,int width,
+                          boolean header,boolean isFact){
+        TextView item=isFact?factLabel(content,size,color,header):
+            label(content,size,color,header);
         item.setGravity(Gravity.CENTER);
         item.setPadding(dp(5),dp(8),dp(5),dp(8));
         item.setBackground(bg(header?HEADER:SURFACE));
@@ -456,14 +472,14 @@ public final class StatisticsActivity extends Activity {
             String[] values={
                 f.expression(),
                 amount(f.hits)+" / "+amount(f.tries),
-                perGross(f.hits,f.tries),
-                PracticeTiming.formatSeconds(Math.round(f.fluency())),
+                percent(f.hits,f.tries),
+                seconds(Math.round(f.fluency())),
                 f.mastered?"Mastered":"Learning"
             };
             int[] colors={FG,FG,CYAN,FG,f.mastered?GREEN:PURPLE};
             for(int j=0;j<values.length;j++)
-                line.addView(cell(values[j],j==0?14:12,colors[j],widths[j],false),
-                    cellParams(widths[j]));
+                line.addView(cell(values[j],j==0?14:12,colors[j],widths[j],false,
+                    j==0),cellParams(widths[j]));
             if(i%2==1)line.setBackgroundColor(HEADER);
         }
         return wrap;
@@ -495,10 +511,9 @@ public final class StatisticsActivity extends Activity {
                     int trials=model.attempts(key);
                     fill=trials==0?HEADER:model.mastered(key)?0xFF245A49:
                         model.correct(key)*2<trials?0xFF633E4B:0xFF584676;
-                    text=trials==0?"·":DozenMath.format(
-                        Math.round(144.0*model.correct(key)/trials));
+                    text=StatisticsNumbers.percentWhole(model.correct(key),trials);
                 }else if(!header)text="—";
-                TextView tile=cell(text,header?15:12,ink,size,header);
+                TextView tile=cell(text,header?15:11,ink,size,header,header);
                 tile.setBackground(bg(fill));
                 LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(dp(size),dp(size));
                 lp.setMargins(dp(1),dp(1),dp(1),dp(1));
@@ -508,21 +523,25 @@ public final class StatisticsActivity extends Activity {
                     tile.setContentDescription(PracticeGrid.expression(op,x,y)+
                         ": "+model.correct(key)+" correct out of "+model.attempts(key)+
                         ", "+(model.mastered(key)?"mastered":"not mastered"));
-                    tile.setOnClickListener(v->new android.app.AlertDialog.Builder(this)
-                        .setTitle(PracticeGrid.expression(op,x,y))
+                    tile.setOnClickListener(v->{
+                        TextView title=factLabel(PracticeGrid.expression(op,x,y),21,FG,true);
+                        title.setPadding(dp(22),dp(18),dp(18),dp(8));
+                        new android.app.AlertDialog.Builder(this)
+                        .setCustomTitle(title)
                         .setMessage("Correct: "+amount(model.correct(key))+"/"+
                             amount(model.attempts(key))+
-                            "\nAccuracy: "+perGross(model.correct(key),model.attempts(key))+
+                            "\nAccuracy: "+percent(model.correct(key),model.attempts(key))+
                             "\nMean time: "+(model.attempts(key)==0?"—":
-                              PracticeTiming.formatSeconds(Math.round(model.averageMs(key))))+
+                              seconds(Math.round(model.averageMs(key))))+
                             "\nRecent correct time: "+(model.attempts(key)==0?"—":
-                              PracticeTiming.formatSeconds(Math.round(model.recentCorrectMs(key)))))
-                        .setPositiveButton("OK",null).show());
+                              seconds(Math.round(model.recentCorrectMs(key)))))
+                        .setPositiveButton("OK",null).show();
+                    });
                 }
             }
         }
         root.addView(horizontal,new LinearLayout.LayoutParams(-1,-2));
-        root.addView(label("Cells display correct answers per gross; swipe horizontally to browse.",
+        root.addView(label("Row and column headings use glyphs; cells show decimal accuracy percentages. Swipe horizontally to browse.",
             12,MUTED,false));
     }
     private void activity(List<PracticeHistory.Event> events){
