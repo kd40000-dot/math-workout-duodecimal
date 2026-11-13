@@ -117,6 +117,12 @@ public final class CustomPracticeActivity extends Activity {
         scroll.addView(content);
         setContentView(scroll);
         showConfiguration();
+        // Launch exactly once for this installation, without changing any
+        // adaptive-progress preferences. Also works for upgrades from older
+        // app versions where the tutorial has not yet been shown.
+        if(state==null && !prefs.getBoolean(TutorialActivity.PREF_COMPLETE,false)){
+            startActivity(new Intent(this,TutorialActivity.class));
+        }
     }
 
     @Override protected void onNewIntent(Intent intent) {
