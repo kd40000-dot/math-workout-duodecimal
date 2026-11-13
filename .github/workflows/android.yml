@@ -51,19 +51,19 @@ jobs:
           fi
       - uses: actions/upload-artifact@v4
         with:
-          name: duodecimal-workout-1.7.0-signed-apk
+          name: duodecimal-workout-1.8.0-signed-apk
           path: app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
       - name: Publish directly downloadable signed APK on GitHub Releases
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cp app/build/outputs/apk/release/app-release.apk Duodecimal-Workout-1.7.0-signed.apk
-          if gh release view v1.7.0 >/dev/null 2>&1; then
-            gh release upload v1.7.0 Duodecimal-Workout-1.7.0-signed.apk --clobber
+          cp app/build/outputs/apk/release/app-release.apk Duodecimal-Workout-1.8.0-signed.apk
+          if gh release view v1.8.0 >/dev/null 2>&1; then
+            gh release upload v1.8.0 Duodecimal-Workout-1.8.0-signed.apk --clobber
           else
-            gh release create v1.7.0 Duodecimal-Workout-1.7.0-signed.apk \
+            gh release create v1.8.0 Duodecimal-Workout-1.8.0-signed.apk \
               --target "$GITHUB_SHA" \
-              --title "Duodecimal Workout 1.7.0 - persistent signing" \
-              --notes "UI refresh: Practice, Learn, and More navigation; clearer language, progressive learning, and a collapsible progress table. Existing data and stable signing are retained."
+              --title "Duodecimal Workout 1.8.0 - persistent signing" \
+              --notes "AnkiDroid-style navigation drawer and functional Keybr-inspired adaptive settings, with statistics, fluency tracking, and persistent signing. Existing saved learning progress is retained."
           fi
