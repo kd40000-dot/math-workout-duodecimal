@@ -6,13 +6,12 @@ android {
         applicationId 'com.duodecimal.workout'
         minSdk 26
         targetSdk 34
-        versionCode 12
-        versionName '1.6.1'
+        versionCode 13
+        versionName '1.6.2'
     }
     signingConfigs {
         persistent {
-            // Materialized by GitHub Actions from encrypted repository secrets.
-            // Never commit the private keystore or its password.
+            // Reconstructed by GitHub Actions from the repository's stable public signing bundle.
             storeFile file(System.getenv('DUO_SIGNING_KEYSTORE_PATH') ?: 'missing-keystore.jks')
             storePassword System.getenv('DUO_SIGNING_PASSWORD') ?: ''
             keyAlias 'duodecimal'
