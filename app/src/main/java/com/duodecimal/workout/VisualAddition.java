@@ -28,8 +28,8 @@ public final class VisualAddition {
         "Caps · mod 3", "Bodies · mod 4", "Combine · no carry",
         "Carry recognition", "Full visual addition"
     };
-    public static final String[] CAP_NAMES = {"Flat", "Breve", "Dot"};
-    public static final String[] BODY_NAMES = {"Loop", "Short T", "V", "El"};
+    public static final String[] CAP_NAMES = {"Bar", "Breve", "Dot"};
+    public static final String[] BODY_NAMES = {"Loop", "Stem", "Vee", "El"};
 
     public static int[] stages(int mode) {
         switch (mode) {
