@@ -51,19 +51,19 @@ jobs:
           fi
       - uses: actions/upload-artifact@v4
         with:
-          name: duodecimal-workout-1.9.1-signed-apk
+          name: duodecimal-workout-1.10.0-signed-apk
           path: app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
       - name: Publish directly downloadable signed APK on GitHub Releases
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cp app/build/outputs/apk/release/app-release.apk Duodecimal-Workout-1.9.1-signed.apk
-          if gh release view v1.9.1 >/dev/null 2>&1; then
-            gh release upload v1.9.1 Duodecimal-Workout-1.9.1-signed.apk --clobber
+          cp app/build/outputs/apk/release/app-release.apk Duodecimal-Workout-1.10.0-signed.apk
+          if gh release view v1.10.0 >/dev/null 2>&1; then
+            gh release upload v1.10.0 Duodecimal-Workout-1.10.0-signed.apk --clobber
           else
-            gh release create v1.9.1 Duodecimal-Workout-1.9.1-signed.apk \
+            gh release create v1.10.0 Duodecimal-Workout-1.10.0-signed.apk \
               --target "$GITHUB_SHA" \
-              --title "Duodecimal Workout 1.9.1 - persistent signing" \
-              --notes "Statistics page shows math facts in custom duodecimal glyphs and all measurements in decimal Arabic numerals. Preserves saved progress and signing."
+              --title "Duodecimal Workout 1.10.0 - persistent signing" \
+              --notes "Adds skippable, replayable beginner tutorial on first launch plus permanent plain-language base-twelve and glyph explanation. Retains local progress and permanent signing."
           fi
