@@ -58,6 +58,7 @@ public final class CustomPracticeActivity extends Activity {
     private Runnable pendingAdvance;
     private int questionSerial;
     private boolean adaptive = true;
+    private boolean showTable = false;
     private AdaptiveFacts learning;
     private long questionStartMs;
     private boolean firstAttemptOnQuestion;
@@ -100,6 +101,7 @@ public final class CustomPracticeActivity extends Activity {
         repsIndex = clamp(prefs.getInt("custom_reps_index", 3), 0, PracticeGrid.REP_CHOICES.length - 1);
         loadSelected();
         adaptive = prefs.getBoolean("custom_adaptive_enabled", true);
+        showTable = prefs.getBoolean("custom_show_table", false);
         learning = new AdaptiveFacts(prefs,operation,digitA,digitB,rowPage,colPage);
         scroll = new ScrollView(this);
         scroll.setFillViewport(true);
@@ -151,13 +153,10 @@ public final class CustomPracticeActivity extends Activity {
         questionSerial++;
         session = null;
         content.removeAllViews();
-        header("Custom Practice", "Adaptive facts · progressive unlocks · accuracy and speed tracking");
-        Button modesButton = button("OTHER WORKOUT MODES →", HEADER, CYAN, 14);
-        content.addView(modesButton, new LinearLayout.LayoutParams(-1,dp(46)));
-        modesButton.setOnClickListener(v -> startActivity(new Intent(this, MainActivity.class)));
-        addSpace(10);
-        Button adaptiveButton = button(adaptive ? "ADAPTIVE MODE: ON · SWITCH TO MANUAL" :
-            "MANUAL MODE: ON · SWITCH TO ADAPTIVE", SURFACE, FG, 13);
+        AppNavigation.add(this,content,AppNavigation.PRACTICE);
+        header("Practice", "Master one fact at a time. Your practice adapts to your speed and accuracy.");
+        Button adaptiveButton = button(adaptive ? "Learning mode: Adaptive  ·  Change to manual" :
+            "Learning mode: Manual  ·  Change to adaptive", SURFACE, FG, 14);
         content.addView(adaptiveButton, new LinearLayout.LayoutParams(-1,dp(49)));
         adaptiveButton.setOnClickListener(v -> {
             adaptive=!adaptive;
@@ -169,16 +168,17 @@ public final class CustomPracticeActivity extends Activity {
             List<Long> pool=learning.candidates(operation,digitA,digitB,rowPage,colPage);
             int unlocked=learning.updateUnlocks(pool);
             int mastered=learning.progress(pool);
-            content.addView(label("UNLOCKED "+DozenMath.format(unlocked)+"/"+
-                DozenMath.format(pool.size())+" · MASTERED "+DozenMath.format(mastered)+
-                " · Need 80% mastered to unlock the next 2 facts",14,CYAN,true));
+            content.addView(label("Unlocked "+DozenMath.format(unlocked)+"/"+
+                DozenMath.format(pool.size())+"  ·  Mastered "+DozenMath.format(mastered),
+                17,CYAN,true));
+            content.addView(label("Master 80% of available facts to unlock two more.",13,MUTED,false));
             addSpace(10);
-            Button go=button("START ADAPTIVE PRACTICE →",PURPLE,BG,17);
+            Button go=button("Start practice",PURPLE,BG,18);
             content.addView(go,new LinearLayout.LayoutParams(-1,dp(55)));
             go.setOnClickListener(v->startPractice());
             addSpace(12);
         }
-        content.addView(label("OPERATION", 12, MUTED, true));
+        content.addView(label("Operation", 14, MUTED, true));
         Spinner ops = spinner(PracticeGrid.OPERATIONS, operation);
         content.addView(ops, new LinearLayout.LayoutParams(-1, dp(48)));
         ops.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -188,8 +188,8 @@ public final class CustomPracticeActivity extends Activity {
             }
         });
         addSpace(12);
-        content.addView(label("OPERAND LENGTHS", 12, MUTED, true));
-        content.addView(label("Rows = first operand · Columns = second operand", 12, MUTED, false));
+        content.addView(label("Number of digits", 14, MUTED, true));
+        content.addView(label("First number · Second number", 12, MUTED, false));
         LinearLayout sizes = horizontal();
         content.addView(sizes, new LinearLayout.LayoutParams(-1, dp(50)));
         Spinner left = spinner(PracticeGrid.DIGIT_CHOICES, digitA - 1);
@@ -214,7 +214,7 @@ public final class CustomPracticeActivity extends Activity {
         });
         addSpace(14);
 
-        if (!adaptive) content.addView(label("REPETITIONS PER SELECTED FACT", 12, MUTED, true));
+        if (!adaptive) content.addView(label("Repetitions per fact", 14, MUTED, true));
         String[] repLabels = new String[PracticeGrid.REP_CHOICES.length];
         for (int i = 0; i < repLabels.length; i++)
             repLabels[i] = DozenMath.format(PracticeGrid.REP_CHOICES[i]) + " reps";
@@ -232,23 +232,34 @@ public final class CustomPracticeActivity extends Activity {
         });
         addSpace(13);
 
-        content.addView(label(adaptive ? "PROGRESSIVE FACT TABLE" : "SELECT FACTS", 17, CYAN, true));
+        content.addView(label(adaptive ? "Your fact table" : "Select facts", 19, CYAN, true));
         content.addView(label(adaptive ?
-            "Cyan = mastered · Purple = unlocked · Dim = locked. Each cell tracks its own accuracy and response time. Progress is saved for each operation and operand length." :
-            "Each cell shows its result. Purple = selected. Ordered pairs are distinct: 3 + 5 and 5 + 3 can be selected separately.", 12, MUTED, false));
+            "Purple: learning · Teal: mastered · Dim: locked. Tap a fact to see your statistics." :
+            "Tap cells to select facts. Purple indicates selected facts.", 13, MUTED, false));
         addSpace(8);
-
-        axisPager("Rows · first operand", digitA, true);
-        axisPager("Columns · second operand", digitB, false);
-        addSpace(8);
-        addTable();
-        addSpace(12);
+        if(adaptive) {
+            Button toggle=button(showTable ? "Hide table" : "View progress table",HEADER,CYAN,14);
+            content.addView(toggle,new LinearLayout.LayoutParams(-1,dp(52)));
+            toggle.setOnClickListener(v->{
+                showTable=!showTable;
+                prefs.edit().putBoolean("custom_show_table",showTable).apply();
+                showConfiguration();
+            });
+            addSpace(10);
+        }
+        if(!adaptive || showTable) {
+            axisPager("Rows · first number", digitA, true);
+            axisPager("Columns · second number", digitB, false);
+            addSpace(8);
+            addTable();
+            addSpace(12);
+        }
 
         LinearLayout tools = horizontal();
         if (!adaptive) content.addView(tools, new LinearLayout.LayoutParams(-1, dp(48)));
         Button all = button("Select page", SURFACE, FG, 13);
         Button clearPage = button("Clear page", SURFACE, FG, 13);
-        Button clearAll = button("Clear all", SURFACE, RED, 13);
+        Button clearAll = button("Clear selection", SURFACE, RED, 13);
         addWeighted(tools, all, 1);
         addWeighted(tools, clearPage, 1);
         addWeighted(tools, clearAll, 1);
@@ -618,23 +629,26 @@ public final class CustomPracticeActivity extends Activity {
         score.setGravity(Gravity.CENTER);
         content.addView(score);
         addSpace(18);
-        Button again = button("REPEAT SAME FACTS", PURPLE, BG, 17);
+        Button again = button(adaptive ? "Continue learning" : "Repeat practice", PURPLE, BG, 17);
         content.addView(again, new LinearLayout.LayoutParams(-1, dp(56)));
         again.setOnClickListener(v -> startPractice());
         addSpace(10);
-        Button modify = button("EDIT SELECTION", SURFACE, FG, 16);
+        Button modify = button(adaptive ? "View progress" : "Edit selection", SURFACE, FG, 16);
         content.addView(modify, new LinearLayout.LayoutParams(-1, dp(52)));
         modify.setOnClickListener(v -> showConfiguration());
         scrollToTop();
     }
 
     private void header(String title, String description) {
-        TextView back = label("‹  WORKOUT", 14, CYAN, true);
-        back.setPadding(0, dp(4), 0, dp(10));
-        back.setOnClickListener(v -> finish());
-        content.addView(back);
+        if (session != null) {
+            TextView back = label("‹  Back to practice", 15, CYAN, true);
+            back.setMinHeight(dp(48));
+            back.setGravity(Gravity.CENTER_VERTICAL);
+            back.setOnClickListener(v -> showConfiguration());
+            content.addView(back);
+        }
         content.addView(label(title, 28, PURPLE, true));
-        content.addView(label(description, 13, MUTED, false));
+        content.addView(label(description, 14, MUTED, false));
         addSpace(18);
     }
 
