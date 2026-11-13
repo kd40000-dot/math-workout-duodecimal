@@ -100,6 +100,7 @@ public final class VisualAdditionActivity extends Activity {
     }
 
     @Override public void onBackPressed() {
+        if(DrawerNavigation.close(this))return;
         if (questions != null) showSetup();
         else super.onBackPressed();
     }
@@ -543,10 +544,7 @@ public final class VisualAdditionActivity extends Activity {
     }
 
     private void pageHeader(String heading, String subtitle) {
-        TextView back=label("‹  WORKOUT",14,CYAN,true);
-        back.setPadding(0,0,0,dp(12));
-        back.setOnClickListener(v -> finish());
-        root.addView(back);
+        DrawerNavigation.addBar(this,root,"Visual addition",DrawerNavigation.LEARN);
         root.addView(label(heading,28,PURPLE,true));
         root.addView(label(subtitle,13,MUTED,false));
         gap(16);
