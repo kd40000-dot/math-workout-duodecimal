@@ -55,7 +55,7 @@ public final class VisualMultiplicationActivity extends Activity {
         setup();
     }
     @Override protected void onDestroy(){cancel();super.onDestroy();}
-    @Override public void onBackPressed(){if(completed>0 || stage>=0){cancel();completed=0;stage=-1;setup();} else super.onBackPressed();}
+    @Override public void onBackPressed(){if(DrawerNavigation.close(this))return;if(completed>0 || stage>=0){cancel();completed=0;stage=-1;setup();} else super.onBackPressed();}
     private void cancel(){if(pending!=null){handler.removeCallbacks(pending);pending=null;}}
     private int dp(int x){return (int)(getResources().getDisplayMetrics().density*x+.5f);}
     private GradientDrawable bg(int color){GradientDrawable d=new GradientDrawable();d.setColor(color);d.setCornerRadius(dp(10));return d;}
@@ -75,8 +75,7 @@ public final class VisualMultiplicationActivity extends Activity {
     }
     private void gap(int h){root.addView(new View(this),new LinearLayout.LayoutParams(1,dp(h)));}
     private void header(String subtitle){
-        TextView back=label("‹  WORKOUT",14,CYAN);
-        root.addView(back);back.setOnClickListener(v->finish());gap(14);
+        DrawerNavigation.addBar(this,root,"Visual multiplication",DrawerNavigation.LEARN);
         add("Visual Multiplication",26,PURPLE);
         add(subtitle,13,MUTED);gap(14);
     }
