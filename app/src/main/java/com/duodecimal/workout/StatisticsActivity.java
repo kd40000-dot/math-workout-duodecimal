@@ -347,7 +347,7 @@ public final class StatisticsActivity extends Activity {
                 canvas.drawLine(left,y,right,y,p);
             }
             p.setColor(CYAN);
-            p.setStrokeWidth(dp(1.5f));
+            p.setStrokeWidth(dp(2));
             p.setPathEffect(new android.graphics.DashPathEffect(new float[]{dp(7),dp(5)},0));
             float targetY=bottom-Math.min(max,goal)/max*height;
             canvas.drawLine(left,targetY,right,targetY,p);
@@ -465,7 +465,7 @@ public final class StatisticsActivity extends Activity {
         root.addView(scroller,new LinearLayout.LayoutParams(-1,-2));
         LinearLayout table=vertical();scroller.addView(table);
         LinearLayout headings=horizontal();table.addView(headings);
-        heatCell(headings,"×",HEADER,CYAN,null);
+        heatCell(headings,PracticeGrid.SYMBOLS[op],HEADER,CYAN,null);
         for(int b=0;b<12;b++)heatCell(headings,dozen(b),HEADER,CYAN,null);
         AdaptiveFacts model=new AdaptiveFacts(prefs,op,1,1,0,0);
         List<Long> order=model.candidates(op,1,1,0,0);
