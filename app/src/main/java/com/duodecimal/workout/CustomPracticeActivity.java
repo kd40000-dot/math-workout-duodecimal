@@ -61,6 +61,10 @@ public final class CustomPracticeActivity extends Activity {
     private boolean showTable = false;
     private AdaptiveFacts learning;
     private long questionStartMs;
+    private long slowestDurationMs;
+    private long slowestPair;
+    private boolean slowestWasCorrect;
+    private boolean hasSlowest;
     private boolean firstAttemptOnQuestion;
 
     private void cancelAutoAdvance() {
@@ -467,6 +471,10 @@ public final class CustomPracticeActivity extends Activity {
             session = PracticeGrid.makeSession(selected, PracticeGrid.REP_CHOICES[repsIndex], random);
         }
         sessionIndex = sessionAttempted = sessionCorrect = 0;
+        slowestDurationMs = 0;
+        slowestPair = 0;
+        hasSlowest = false;
+        slowestWasCorrect = false;
         answered = false;
         showQuestion();
     }
@@ -613,9 +621,15 @@ public final class CustomPracticeActivity extends Activity {
         }
         DozenMath.Problem current = PracticeGrid.problem(operation, session.get(sessionIndex));
         answered = true;
-        learning.record(session.get(sessionIndex),
-            entered.longValue()==current.answer,
-            SystemClock.elapsedRealtime()-questionStartMs);
+        long durationMs = Math.max(0,SystemClock.elapsedRealtime()-questionStartMs);
+        boolean correctAnswer = entered.longValue()==current.answer;
+        if (!hasSlowest || durationMs > slowestDurationMs) {
+            hasSlowest = true;
+            slowestDurationMs = durationMs;
+            slowestPair = session.get(sessionIndex);
+            slowestWasCorrect = correctAnswer;
+        }
+        learning.record(session.get(sessionIndex),correctAnswer,durationMs);
         sessionAttempted++;
         if (entered.longValue() == current.answer) {
             sessionCorrect++;
@@ -646,6 +660,28 @@ public final class CustomPracticeActivity extends Activity {
             + DozenMath.format(session.size()) + " correct", 27, GREEN, true);
         score.setGravity(Gravity.CENTER);
         content.addView(score);
+        addSpace(16);
+        if(hasSlowest) {
+            LinearLayout slowCard = vertical();
+            slowCard.setPadding(dp(16),dp(15),dp(16),dp(15));
+            slowCard.setBackground(round(SURFACE,14));
+            content.addView(slowCard,new LinearLayout.LayoutParams(-1,-2));
+            slowCard.addView(label("SLOWEST FACT THIS ROUND",13,CYAN,true));
+            addSpaceIn(slowCard,8);
+            String expression = PracticeGrid.expression(operation,
+                PracticeGrid.firstOperand(slowestPair),
+                PracticeGrid.secondOperand(slowestPair));
+            slowCard.addView(label(expression+" = "+
+                DozenMath.format(PracticeGrid.answer(operation,
+                    PracticeGrid.firstOperand(slowestPair),
+                    PracticeGrid.secondOperand(slowestPair))),25,FG,true));
+            addSpaceIn(slowCard,5);
+            slowCard.addView(label(PracticeTiming.formatSeconds(slowestDurationMs)+
+                " response time  ·  "+(slowestWasCorrect?"Correct":"Incorrect"),
+                17,slowestWasCorrect?GREEN:RED,true));
+            addSpaceIn(slowCard,5);
+            slowCard.addView(label("Measured from question display until the answer was submitted.",12,MUTED,false));
+        }
         addSpace(18);
         Button again = button(adaptive ? "Continue learning" : "Repeat practice", PURPLE, BG, 17);
         content.addView(again, new LinearLayout.LayoutParams(-1, dp(56)));
