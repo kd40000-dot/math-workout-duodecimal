@@ -448,6 +448,18 @@ public final class CustomPracticeActivity extends Activity {
             showFinished();
             return;
         }
+        if (adaptive && sessionIndex > 0) {
+            // Re-sample after each answer so the newest accuracy, latency and
+            // mastery values immediately influence subsequent practice.
+            List<Long> pool=learning.candidates(operation,digitA,digitB,rowPage,colPage);
+            List<Long> proposals=learning.session(pool,2,random);
+            if(!proposals.isEmpty()) {
+                long previous=session.get(sessionIndex-1);
+                long chosen=proposals.get(0);
+                if(chosen==previous && proposals.size()>1)chosen=proposals.get(1);
+                session.set(sessionIndex,chosen);
+            }
+        }
         answered = false;
         firstAttemptOnQuestion=true;
         questionStartMs=SystemClock.elapsedRealtime();
