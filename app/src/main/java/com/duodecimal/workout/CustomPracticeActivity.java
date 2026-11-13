@@ -392,7 +392,19 @@ public final class CustomPracticeActivity extends Activity {
                     item.setContentDescription(PracticeGrid.expression(operation,a,b)+
                         (open ? ", unlocked" : ", locked")+", "+hits+" correct of "+tries+
                         " attempts, average "+(int)learning.averageMs(key)+" milliseconds");
-                    // Progress is earned through practice; tapping a cell cannot unlock it.
+                    // Inspect a fact's learning history without bypassing unlocks.
+                    item.setOnClickListener(v -> {
+                        int n=learning.attempts(key), right=learning.correct(key);
+                        String status=!open ? "Locked" : learning.mastered(key) ? "Mastered" : "Learning";
+                        new android.app.AlertDialog.Builder(this)
+                            .setTitle(PracticeGrid.expression(operation,a,b))
+                            .setMessage("Status: "+status+"\nCorrect: "+right+"/"+n+
+                                "\nAccuracy: "+(n==0?0:(100*right/n))+"%"+
+                                "\nAverage response: "+(int)learning.averageMs(key)+" ms"+
+                                "\nCorrect streak: "+learning.streak(key)+
+                                "\nMastery: at least 3 correct, 80% accuracy, two consecutive correct, and an average under 8 seconds.")
+                            .setPositiveButton("OK",null).show();
+                    });
                 } else if (valid) {
                     item.setContentDescription(PracticeGrid.expression(operation, a, b)
                         + " equals " + value + (chosen ? ". Selected" : ". Not selected"));
