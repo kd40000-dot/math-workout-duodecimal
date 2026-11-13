@@ -100,7 +100,7 @@ public final class CustomPracticeActivity extends Activity {
         repsIndex = clamp(prefs.getInt("custom_reps_index", 3), 0, PracticeGrid.REP_CHOICES.length - 1);
         loadSelected();
         adaptive = prefs.getBoolean("custom_adaptive_enabled", true);
-        learning = new AdaptiveFacts(prefs,operation,digitA,digitB);
+        learning = new AdaptiveFacts(prefs,operation,digitA,digitB,rowPage,colPage);
         scroll = new ScrollView(this);
         scroll.setFillViewport(true);
         scroll.setBackgroundColor(BG);
@@ -140,12 +140,13 @@ public final class CustomPracticeActivity extends Activity {
         rowPage = 0;
         colPage = 0;
         loadSelected();
-        learning = new AdaptiveFacts(prefs,operation,digitA,digitB);
+        learning = new AdaptiveFacts(prefs,operation,digitA,digitB,rowPage,colPage);
         saveConfig();
         showConfiguration();
     }
 
     private void showConfiguration() {
+        learning = new AdaptiveFacts(prefs,operation,digitA,digitB,rowPage,colPage);
         cancelAutoAdvance();
         questionSerial++;
         session = null;
