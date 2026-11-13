@@ -6,6 +6,8 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <activity android:name=".TutorialActivity" android:exported="false"/>
+        <activity android:name=".AboutDuodecimalActivity" android:exported="false"/>
         <activity android:name=".LearnActivity" android:exported="false"/>
         <activity android:name=".StatisticsActivity" android:exported="false"/>
         <activity android:name=".SettingsActivity" android:exported="false"/>
