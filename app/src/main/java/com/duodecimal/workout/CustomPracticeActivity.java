@@ -613,7 +613,7 @@ public final class CustomPracticeActivity extends Activity {
         }
         DozenMath.Problem current = PracticeGrid.problem(operation, session.get(sessionIndex));
         answered = true;
-        if(adaptive)learning.record(session.get(sessionIndex),
+        learning.record(session.get(sessionIndex),
             entered.longValue()==current.answer,
             SystemClock.elapsedRealtime()-questionStartMs);
         sessionAttempted++;
