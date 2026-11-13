@@ -7,6 +7,8 @@ import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
+import android.content.Intent;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -55,6 +57,10 @@ public final class CustomPracticeActivity extends Activity {
     private final Handler autoAdvanceHandler = new Handler(Looper.getMainLooper());
     private Runnable pendingAdvance;
     private int questionSerial;
+    private boolean adaptive = true;
+    private AdaptiveFacts learning;
+    private long questionStartMs;
+    private boolean firstAttemptOnQuestion;
 
     private void cancelAutoAdvance() {
         if (pendingAdvance != null) {
@@ -93,6 +99,8 @@ public final class CustomPracticeActivity extends Activity {
         digitB = clamp(prefs.getInt("custom_digits_b", 1), 1, 4);
         repsIndex = clamp(prefs.getInt("custom_reps_index", 3), 0, PracticeGrid.REP_CHOICES.length - 1);
         loadSelected();
+        adaptive = prefs.getBoolean("custom_adaptive_enabled", true);
+        learning = new AdaptiveFacts(prefs,operation,digitA,digitB);
         scroll = new ScrollView(this);
         scroll.setFillViewport(true);
         scroll.setBackgroundColor(BG);
@@ -132,6 +140,7 @@ public final class CustomPracticeActivity extends Activity {
         rowPage = 0;
         colPage = 0;
         loadSelected();
+        learning = new AdaptiveFacts(prefs,operation,digitA,digitB);
         saveConfig();
         showConfiguration();
     }
@@ -141,7 +150,33 @@ public final class CustomPracticeActivity extends Activity {
         questionSerial++;
         session = null;
         content.removeAllViews();
-        header("Custom Practice", "Choose exact facts to practice. Tap table cells to include or exclude them.");
+        header("Custom Practice", "Adaptive facts · progressive unlocks · accuracy and speed tracking");
+        Button modesButton = button("OTHER WORKOUT MODES →", HEADER, CYAN, 14);
+        content.addView(modesButton, new LinearLayout.LayoutParams(-1,dp(46)));
+        modesButton.setOnClickListener(v -> startActivity(new Intent(this, MainActivity.class)));
+        addSpace(10);
+        Button adaptiveButton = button(adaptive ? "ADAPTIVE MODE: ON · SWITCH TO MANUAL" :
+            "MANUAL MODE: ON · SWITCH TO ADAPTIVE", SURFACE, FG, 13);
+        content.addView(adaptiveButton, new LinearLayout.LayoutParams(-1,dp(49)));
+        adaptiveButton.setOnClickListener(v -> {
+            adaptive=!adaptive;
+            prefs.edit().putBoolean("custom_adaptive_enabled",adaptive).apply();
+            showConfiguration();
+        });
+        addSpace(12);
+        if(adaptive) {
+            List<Long> pool=learning.candidates(operation,digitA,digitB,rowPage,colPage);
+            int unlocked=learning.updateUnlocks(pool);
+            int mastered=learning.progress(pool);
+            content.addView(label("UNLOCKED "+DozenMath.format(unlocked)+"/"+
+                DozenMath.format(pool.size())+" · MASTERED "+DozenMath.format(mastered)+
+                " · Need 80% mastered to unlock the next 2 facts",14,CYAN,true));
+            addSpace(10);
+            Button go=button("START ADAPTIVE PRACTICE →",PURPLE,BG,17);
+            content.addView(go,new LinearLayout.LayoutParams(-1,dp(55)));
+            go.setOnClickListener(v->startPractice());
+            addSpace(12);
+        }
         content.addView(label("OPERATION", 12, MUTED, true));
         Spinner ops = spinner(PracticeGrid.OPERATIONS, operation);
         content.addView(ops, new LinearLayout.LayoutParams(-1, dp(48)));
@@ -178,12 +213,12 @@ public final class CustomPracticeActivity extends Activity {
         });
         addSpace(14);
 
-        content.addView(label("REPETITIONS PER SELECTED FACT", 12, MUTED, true));
+        if (!adaptive) content.addView(label("REPETITIONS PER SELECTED FACT", 12, MUTED, true));
         String[] repLabels = new String[PracticeGrid.REP_CHOICES.length];
         for (int i = 0; i < repLabels.length; i++)
             repLabels[i] = DozenMath.format(PracticeGrid.REP_CHOICES[i]) + " reps";
         Spinner repSpinner = spinner(repLabels, repsIndex);
-        content.addView(repSpinner, new LinearLayout.LayoutParams(-1, dp(48)));
+        if(!adaptive) content.addView(repSpinner, new LinearLayout.LayoutParams(-1, dp(48)));
         repSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override public void onNothingSelected(AdapterView<?> parent) {}
             @Override public void onItemSelected(AdapterView<?> parent, View view, int index, long id) {
@@ -196,8 +231,10 @@ public final class CustomPracticeActivity extends Activity {
         });
         addSpace(13);
 
-        content.addView(label("SELECT FACTS", 17, CYAN, true));
-        content.addView(label("Each cell shows its result. Purple = selected. Ordered pairs are distinct: 3 + 5 and 5 + 3 can be selected separately.", 12, MUTED, false));
+        content.addView(label(adaptive ? "PROGRESSIVE FACT TABLE" : "SELECT FACTS", 17, CYAN, true));
+        content.addView(label(adaptive ?
+            "Cyan = mastered · Purple = unlocked · Dim = locked. Each cell tracks its own accuracy and response time. Progress is saved for each operation and operand length." :
+            "Each cell shows its result. Purple = selected. Ordered pairs are distinct: 3 + 5 and 5 + 3 can be selected separately.", 12, MUTED, false));
         addSpace(8);
 
         axisPager("Rows · first operand", digitA, true);
@@ -207,7 +244,7 @@ public final class CustomPracticeActivity extends Activity {
         addSpace(12);
 
         LinearLayout tools = horizontal();
-        content.addView(tools, new LinearLayout.LayoutParams(-1, dp(48)));
+        if (!adaptive) content.addView(tools, new LinearLayout.LayoutParams(-1, dp(48)));
         Button all = button("Select page", SURFACE, FG, 13);
         Button clearPage = button("Clear page", SURFACE, FG, 13);
         Button clearAll = button("Clear all", SURFACE, RED, 13);
@@ -221,19 +258,19 @@ public final class CustomPracticeActivity extends Activity {
 
         selectedLabel = label("", 14, CYAN, true);
         selectedLabel.setGravity(Gravity.CENTER);
-        content.addView(selectedLabel);
+        if(!adaptive) content.addView(selectedLabel);
         addSpace(8);
         startButton = button("START PRACTICE", PURPLE, BG, 17);
-        content.addView(startButton, new LinearLayout.LayoutParams(-1, dp(56)));
+        if(!adaptive) content.addView(startButton, new LinearLayout.LayoutParams(-1, dp(56)));
         startButton.setOnClickListener(v -> startPractice());
         addSpace(12);
-        content.addView(label("Your selected facts are saved separately for each operation and operand-length combination. All table entries and session counts use base 12.", 12, MUTED, false));
+        if(!adaptive) content.addView(label("Your selected facts are saved separately for each operation and operand-length combination. All table entries and session counts use base 12.", 12, MUTED, false));
         updateSelectionCount();
         scrollToTop();
     }
 
     private void updateSelectionCount() {
-        if (selectedLabel == null || startButton == null) return;
+        if(adaptive || selectedLabel == null || startButton == null) return;
         int count = selected.size(), reps = PracticeGrid.REP_CHOICES[repsIndex];
         selectedLabel.setText(DozenMath.format(count) + " facts × " + DozenMath.format(reps)
             + " reps = " + DozenMath.format((long) count * reps) + " questions");
@@ -326,6 +363,9 @@ public final class CustomPracticeActivity extends Activity {
         for (int j = 0; j < 12; j++)
             cell(headings, DozenMath.format(beginB + j), HEADER, CYAN, true, null, 58);
 
+        List<Long> adaptivePool=adaptive ?
+            learning.candidates(operation,digitA,digitB,rowPage,colPage) : null;
+        int unlockedCount=adaptive ? learning.updateUnlocks(adaptivePool) : 0;
         for (int i = 0; i < 12; i++) {
             final int a = beginA + i;
             LinearLayout line = horizontal();
@@ -337,9 +377,23 @@ public final class CustomPracticeActivity extends Activity {
                 long key = PracticeGrid.key(a, b);
                 String value = valid ? DozenMath.format(PracticeGrid.answer(operation, a, b)) : "—";
                 boolean chosen = selected.contains(key);
-                TextView item = cell(line, value, chosen ? PURPLE : SURFACE,
-                    valid ? (chosen ? BG : FG) : MUTED, chosen, null, 58);
-                if (valid) {
+                int rank=adaptive && valid ? adaptivePool.indexOf(key) : -1;
+                boolean open=adaptive && rank>=0 && rank<unlockedCount;
+                boolean mastered=adaptive && open && learning.mastered(key);
+                int fill=adaptive ? (mastered ? 0xFF245665 : open ? PURPLE : HEADER) :
+                    (chosen ? PURPLE : SURFACE);
+                int ink=adaptive ? (open && !mastered ? BG : FG) :
+                    (chosen ? BG : FG);
+                TextView item = cell(line, value, fill, valid ? ink : MUTED, chosen, null, 58);
+                if(adaptive && !open)item.setAlpha(0.40f);
+                if (valid && adaptive) {
+                    int tries=learning.attempts(key);
+                    int hits=learning.correct(key);
+                    item.setContentDescription(PracticeGrid.expression(operation,a,b)+
+                        (open ? ", unlocked" : ", locked")+", "+hits+" correct of "+tries+
+                        " attempts, average "+(int)learning.averageMs(key)+" milliseconds");
+                    // Progress is earned through practice; tapping a cell cannot unlock it.
+                } else if (valid) {
                     item.setContentDescription(PracticeGrid.expression(operation, a, b)
                         + " equals " + value + (chosen ? ". Selected" : ". Not selected"));
                     item.setOnClickListener(v -> {
@@ -361,9 +415,15 @@ public final class CustomPracticeActivity extends Activity {
     }
 
     private void startPractice() {
-        if (selected.isEmpty()) return;
-        saveSelected();
-        session = PracticeGrid.makeSession(selected, PracticeGrid.REP_CHOICES[repsIndex], random);
+        if(adaptive){
+            List<Long> pool=learning.candidates(operation,digitA,digitB,rowPage,colPage);
+            session=learning.session(pool,24,random);
+            if(session.isEmpty())return;
+        } else {
+            if (selected.isEmpty()) return;
+            saveSelected();
+            session = PracticeGrid.makeSession(selected, PracticeGrid.REP_CHOICES[repsIndex], random);
+        }
         sessionIndex = sessionAttempted = sessionCorrect = 0;
         answered = false;
         showQuestion();
@@ -377,10 +437,13 @@ public final class CustomPracticeActivity extends Activity {
             return;
         }
         answered = false;
+        firstAttemptOnQuestion=true;
+        questionStartMs=SystemClock.elapsedRealtime();
         typed.setLength(0);
         content.removeAllViews();
         header("Practice", PracticeGrid.OPERATIONS[operation]
-            + " · " + DozenMath.format(selected.size()) + " selected facts");
+            + (adaptive ? " · adaptive learning" :
+            " · " + DozenMath.format(selected.size()) + " selected facts"));
         progress = label("", 15, CYAN, true);
         progress.setGravity(Gravity.CENTER);
         content.addView(progress);
@@ -496,6 +559,9 @@ public final class CustomPracticeActivity extends Activity {
         }
         DozenMath.Problem current = PracticeGrid.problem(operation, session.get(sessionIndex));
         answered = true;
+        if(adaptive)learning.record(session.get(sessionIndex),
+            entered.longValue()==current.answer,
+            SystemClock.elapsedRealtime()-questionStartMs);
         sessionAttempted++;
         if (entered.longValue() == current.answer) {
             sessionCorrect++;
@@ -519,7 +585,9 @@ public final class CustomPracticeActivity extends Activity {
 
     private void showFinished() {
         content.removeAllViews();
-        header("Session complete", "All selected facts have been practiced the requested number of times.");
+        header("Session complete", adaptive ?
+            "Adaptive learning updated your per-fact speed and accuracy. More facts unlock as mastery improves." :
+            "All selected facts have been practiced the requested number of times.");
         TextView score = label(DozenMath.format(sessionCorrect) + " / "
             + DozenMath.format(session.size()) + " correct", 27, GREEN, true);
         score.setGravity(Gravity.CENTER);
