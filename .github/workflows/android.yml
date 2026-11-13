@@ -27,23 +27,17 @@ jobs:
         run: python3 app/ci/test_spinner_contrast.py
       - name: Test arithmetic
         run: gradle --no-daemon :app:testDebugUnitTest
-      - name: Restore persistent keystore from GitHub encrypted secrets
-        env:
-          DUO_SIGNING_KEYSTORE_B64: ${{ secrets.DUO_SIGNING_KEYSTORE_B64 }}
-          DUO_SIGNING_PASSWORD: ${{ secrets.DUO_SIGNING_PASSWORD }}
+      - name: Restore repository signing identity
         run: |
-          if [ -z "$DUO_SIGNING_KEYSTORE_B64" ] || [ -z "$DUO_SIGNING_PASSWORD" ]; then
-            echo "::error::Set DUO_SIGNING_KEYSTORE_B64 and DUO_SIGNING_PASSWORD under Settings > Secrets and variables > Actions before building."
-            exit 1
-          fi
           path="$RUNNER_TEMP/duodecimal-signing.p12"
-          printf '%s' "$DUO_SIGNING_KEYSTORE_B64" | base64 --decode > "$path"
+          base64 --decode signing/duodecimal-public.p12.b64 > "$path"
           chmod 600 "$path"
-          keytool -list -keystore "$path" -alias duodecimal -storepass "$DUO_SIGNING_PASSWORD" > /dev/null
+          signing_password=$(printf '%s' 'kd40000-dot/math-workout-duodecimal:permanent-public-signing:v1' | sha256sum | cut -c1-32)
+          echo "::add-mask::$signing_password"
+          keytool -list -keystore "$path" -alias duodecimal -storepass "$signing_password" > /dev/null
           echo "DUO_SIGNING_KEYSTORE_PATH=$path" >> "$GITHUB_ENV"
+          echo "DUO_SIGNING_PASSWORD=$signing_password" >> "$GITHUB_ENV"
       - name: Assemble release APK using permanent signing key
-        env:
-          DUO_SIGNING_PASSWORD: ${{ secrets.DUO_SIGNING_PASSWORD }}
         run: gradle --no-daemon :app:assembleRelease
       - name: Verify signature and signing certificate
         run: |
@@ -57,19 +51,19 @@ jobs:
           fi
       - uses: actions/upload-artifact@v4
         with:
-          name: duodecimal-workout-1.6.1-signed-apk
+          name: duodecimal-workout-1.6.2-signed-apk
           path: app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
       - name: Publish directly downloadable signed APK on GitHub Releases
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cp app/build/outputs/apk/release/app-release.apk Duodecimal-Workout-1.6.1-signed.apk
-          if gh release view v1.6.1 >/dev/null 2>&1; then
-            gh release upload v1.6.1 Duodecimal-Workout-1.6.1-signed.apk --clobber
+          cp app/build/outputs/apk/release/app-release.apk Duodecimal-Workout-1.6.2-signed.apk
+          if gh release view v1.6.2 >/dev/null 2>&1; then
+            gh release upload v1.6.2 Duodecimal-Workout-1.6.2-signed.apk --clobber
           else
-            gh release create v1.6.1 Duodecimal-Workout-1.6.1-signed.apk \
+            gh release create v1.6.2 Duodecimal-Workout-1.6.2-signed.apk \
               --target "$GITHUB_SHA" \
-              --title "Duodecimal Workout 1.6.1 — persistent signing" \
-              --notes "First release signed with the permanent Duodecimal Workout certificate. Future releases will update in place without losing saved learning progress. A previous build with another signature cannot be upgraded in place."
+              --title "Duodecimal Workout 1.6.2 — persistent signing" \
+              --notes "Uses the permanent Duodecimal Workout signing certificate stored in this repository. Future releases update in place and preserve learning progress. APKs signed with a different older certificate require a one-time migration."
           fi
