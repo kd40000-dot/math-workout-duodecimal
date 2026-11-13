@@ -39,14 +39,14 @@ public final class VisualAdditionActivity extends Activity {
     private static final long TIMED_DURATION_MS = 60000;
     private static final int[] LENGTHS = {12, 24, 48}; // 10, 20, 40 in base 12
     private static final String[] CAP_RULES = {
-        "A flat cap adds zero modulo 3, so it leaves the other cap unchanged.",
-        "Breve + breve gives dot. Breve + dot gives flat. Dot + dot gives breve.",
-        "Caps cycle through flat → breve → dot → flat when adding one."
+        "A bar cap adds zero modulo 3, so it leaves the other cap unchanged.",
+        "Breve + breve gives dot. Breve + dot gives bar. Dot + dot gives breve.",
+        "Caps cycle through bar → breve → dot → bar when adding one."
     };
     private static final String[] BODY_RULES = {
         "The loop body adds zero modulo 4 and leaves the other body unchanged.",
-        "Short-T + short-T and el + el both give the V body.",
-        "Short-T + el and V + V both give the loop body."
+        "Stem + stem and el + el both give the V body.",
+        "Stem + el and V + V both give the loop body."
     };
 
     private SharedPreferences prefs;
@@ -149,10 +149,10 @@ public final class VisualAdditionActivity extends Activity {
         String description;
         switch (mode) {
             case VisualAddition.CAP:
-                description = "Add only the caps, modulo 3. Choose flat, breve or dot. Each of the 9 cap combinations appears once per pass.";
+                description = "Add only the caps, modulo 3. Choose bar, breve or dot. Each of the 9 cap combinations appears once per pass.";
                 break;
             case VisualAddition.BODY:
-                description = "Add only the bodies, modulo 4. Choose loop, short-T, V or el. Each of the 16 body combinations appears once per pass.";
+                description = "Add only the bodies, modulo 4. Choose loop, stem, V or el. Each of the 16 body combinations appears once per pass.";
                 break;
             case VisualAddition.COMBINE:
                 description = "No-carry additions: first select the resulting cap, then the body. Together they uniquely determine the final digit.";
