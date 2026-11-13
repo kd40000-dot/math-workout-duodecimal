@@ -78,30 +78,14 @@ public final class MainActivity extends Activity {
         body.setPadding(dp(16),dp(20),dp(16),dp(28));
         scroll.addView(body);
         setContentView(scroll);
-        TextView title=label("Duodecimal Workout",29,PURPLE,true);
+        AppNavigation.add(this,body,AppNavigation.MORE);
+        TextView title=label("More workouts",29,PURPLE,true);
         body.addView(title);
-        body.addView(label("BASE 12   ·   ↊ = ten   ·   ↋ = eleven",13,CYAN,false));
-        addSpace(body,14);
-        Button customPractice = button("CUSTOM PRACTICE · SELECT FACTS →", PURPLE, BG);
-        body.addView(customPractice, new LinearLayout.LayoutParams(-1,dp(52)));
-        customPractice.setOnClickListener(v -> startActivity(new Intent(this, CustomPracticeActivity.class)));
-        addSpace(body,10);
-        Button visualAddition = button("VISUAL ADDITION · CAP + BODY →", SURFACE, CYAN);
-        body.addView(visualAddition, new LinearLayout.LayoutParams(-1,dp(52)));
-        visualAddition.setOnClickListener(v ->
-            startActivity(new Intent(this, VisualAdditionActivity.class)));
-        addSpace(body,10);
-        Button visualMultiply = button("VISUAL MULTIPLICATION · CAP × BODY →", SURFACE, CYAN);
-        body.addView(visualMultiply, new LinearLayout.LayoutParams(-1,dp(52)));
-        visualMultiply.setOnClickListener(v ->
-            startActivity(new Intent(this, VisualMultiplicationActivity.class)));
-        addSpace(body,10);
-        Button recognition = button("GLYPH RECOGNITION · MEMORIZE SYMBOLS →", SURFACE, CYAN);
-        body.addView(recognition, new LinearLayout.LayoutParams(-1,dp(52)));
-        recognition.setOnClickListener(v ->
-            startActivity(new Intent(this, GlyphRecognitionActivity.class)));
-        addSpace(body,16);
-        body.addView(label("Exercise",14,MUTED,true));
+        body.addView(label("Explore mixed exercises and challenge yourself beyond the adaptive fact table.",14,MUTED,false));
+        addSpace(body,20);
+        body.addView(label("Quick workout",19,CYAN,true));
+        addSpace(body,8);
+        body.addView(label("Exercise type",14,MUTED,true));
         Spinner modes = new Spinner(this, Spinner.MODE_DROPDOWN);
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item,DozenMath.MODES) {
             @Override public View getView(int position,View convertView,ViewGroup parent) {
