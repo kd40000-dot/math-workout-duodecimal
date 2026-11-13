@@ -1,66 +1,68 @@
 # Duodecimal Workout UI conventions
 
-## Navigation and information architecture
+## Navigation (AnkiDroid-inspired)
 
-The main experience has three peer destinations:
+All primary and exercise screens use one top app bar with a menu icon that
+opens a left-side navigation drawer. Do not introduce bottom navigation tabs.
 
-- **Practice** (launcher): adaptive and manual fact practice. The main action is **Start practice**.
-- **Learn**: glyph recognition, visual addition, visual multiplication.
-- **More**: mixed and specialized arithmetic workouts.
+The drawer groups destinations by task:
 
-Use a consistent top-level destination selector on these three screens. Child drills return to their parent destination. An action that starts an exercise must not look like a destination tab.
+- **Study** — Practice, Browse facts, Statistics
+- **Learn** — Learning tools (glyph recognition, visual addition and visual multiplication)
+- **Other** — Other workouts, Settings
 
-## Language
+The default launch destination is **Practice**, with one clear primary action:
+**Start practice**. Keep study settings and numerical learning rules on the
+Settings screen. Browse facts opens the table, with per-fact details on tap.
 
-Use sentence case for control text, headings, and statuses. Prefer verbs for actions:
-**Start practice**, **View progress table**, **Hide table**, **Continue learning**.
+## Settings (Keybr-inspired)
 
-Avoid acronyms unless explained. Use **base twelve** in instructional text.
-Use **glyph** for the displayed custom numeral and **digit** for its numeric value.
+- **Fluency target:** target successful response time and priority for slow facts
+- **Mastery criteria:** minimum accuracy, number of correct answers, and streak
+- **Unlocking:** percentage gate or all-facts gate; best-achieved vs current
+  mastery check; initial facts and batch size
+- **Fact order:** row-major table, simpler first, or stable mixed order
+- **Sessions:** questions per adaptive session and mastered-fact review
 
-Name glyph components consistently:
-- Caps: **Bar**, **Breve**, **Dot** (digit mod 3).
-- Bodies: **Loop**, **Stem**, **Vee**, **El** (digit mod 4).
+Every control must read/write the same SharedPreferences values used by
+AdaptiveFacts. Never present a setting with no effect. Keep sensible defaults
+and describe the difference between current and ever-achieved mastery.
 
-Arabic references in glyph recognition must be rendered as ordinary decimal numerals
-(0 through 11), never with the custom glyph renderer.
+## Copy, mathematical terminology and information hierarchy
 
-## Visual hierarchy
+Use concise sentence-case controls: **Start practice**, **Browse facts**,
+**Learning tools**, **Settings**, **Continue learning**. Avoid all-caps labels.
 
-Use Dracula colors consistently:
-- Background: #282A36
-- Surface: #44475A
-- Foreground: #F8F8F2
-- Primary action: #BD93F9 (with dark ink)
-- Informational accent: #8BE9FD
-- Success: #50FA7B
-- Error: #FF5555
+Digit math uses the consistent component names:
+- Caps: **Bar**, **Breve**, **Dot** (digit mod 3)
+- Bodies: **Loop**, **Stem**, **Vee**, **El** (digit mod 4)
 
-Only one primary, high-contrast call to action per screen.
-Use secondary surfaces for navigation or disclosure controls.
-Display progress plainly: **Unlocked**, **Mastered**, **First try**.
-Leave detailed per-fact stats in an accessible drilldown rather than
-placing long instructions or dense grids ahead of primary practice.
+Show full duodecimal glyphs in mathematical problems. Recognition drills
+must use ordinary Arabic references for decimal values 0–11.
 
-## Accessibility
+The Dracula palette is:
+- Background #282A36
+- Surface #44475A
+- Foreground #F8F8F2
+- Primary #BD93F9
+- Informational #8BE9FD
+- Success #50FA7B
+- Error #FF5555
 
-- Interactive tap regions at least 48dp high; keypad options use 64dp or more.
-- All selectable graphical cells should have meaningful content descriptions.
-- Color is not the only indicator: also provide labels, statuses and descriptions.
-- Do not rely on system glyph availability for the custom duodecimal numerals.
-- Preserve text contrast on dark dropdown menus and selected states.
-- Support standard Android Back/up behavior.
+Primary actions should be visually dominant. Dense progress tables and
+fine-grained statistics should be disclosed on demand, not interleaved with
+the main workout call to action.
 
-## Persistence and updates
+## Accessibility and data
 
-Never change `com.duodecimal.workout` or reset SharedPreferences namespaces
-just to refresh the UI. Keep the stable release signing certificate and increment
-versionCode for every release. Adaptive mastery and response-time records are
-local user data and must survive normal upgrades.
+- Controls need legible text, contrast and at least 48dp touch targets.
+- Every icon, drawer item and custom glyph cell needs a content description.
+- The drawer must dismiss on backdrop tap or Android Back.
+- Never use color alone to communicate a fact's mastery or lock state.
+- Retain package ID `com.duodecimal.workout` and the persistent signing key.
+- Preserve the old `adaptive_v1_*` progress keys; user-specific mastery,
+  response times and unlocks must survive every ordinary APK update.
 
-## Implementation scope
-
-This project uses Java Android views and native layout primitives. Apply
-Material design principles (hierarchy, discoverability, predictable navigation,
-touch targets and accessibility) without requiring an unrelated Compose or
-Material Components migration.
+The current implementation is native Android views. Apply modern navigation,
+accessibility and information architecture without an unrelated UI-framework
+migration.
